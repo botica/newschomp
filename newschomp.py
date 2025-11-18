@@ -1,5 +1,3 @@
-"""Google News RSS Fetcher - Fetch RSS feeds and article HTML via Playwright."""
-
 import argparse
 import json
 import os
@@ -8,7 +6,7 @@ import sys
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List, Optional
 
@@ -29,24 +27,26 @@ except ImportError:
     OpenAI = None
 
 
+# Constants
+VALID_ATTRIBUTES = {"class", "id", "src", "href", "alt", "title", "value", "type", "name", "width", "height", "role"}
+UNWANTED_TAGS = ['script', 'style', 'meta', 'link', 'iframe', 'noscript', 'path', 'svg']
+ROOT_TAGS = ('html', 'head', 'body')
+
+
 @dataclass
 class Config:
     """Configuration for Google News RSS fetcher."""
-    mode: str = "search"  # 'search', 'topic', or 'custom'
-    search_query: str = "Milwaukee restaurant"
-    topic: str = "TECHNOLOGY"
-    custom_url: str = "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en"
+    search_query: str
     
+    # Localization
     hl: str = "en-US"
     gl: str = "US"
     ceid: str = "US:en"
     
+    # Processing options
     max_items: int = 1
-    save_json: bool = True
-    output_file: str = "google_news_items.json"
-    fetch_html: bool = True
-    summarize: bool = True
     
+    # Network settings
     timeout: int = 15
     user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     
@@ -60,75 +60,93 @@ class Config:
         }
 
 
-class GoogleNewsRSS:
-    """Fetch and parse Google News RSS feeds with optional HTML content."""
+class HTMLCleaner:
+    """Clean and sanitize HTML content."""
     
-    def __init__(self, config: Config):
-        self.config = config
+    @staticmethod
+    def clean_attribute_value(value: str) -> str:
+        """Remove escaped quotes from attribute value."""
+        return re.sub(r'^\\?"|\\?"$', '', value).replace('\\"', '').strip()
     
-    def strip_html(self, html_content: str) -> str:
-        """Remove unwanted tags, invalid attributes, empty tags, and comments."""
-        if not BeautifulSoup:
-            return html_content
-        
-        soup = BeautifulSoup(html_content, 'html.parser')
-
-        # Remove script-like tags
-        for tag in soup.find_all(['script', 'style', 'meta', 'link', 'iframe', 'noscript', 'path', 'svg']):
+    @staticmethod
+    def remove_unwanted_tags(soup: BeautifulSoup) -> None:
+        """Remove script, style, and other unwanted tags."""
+        for tag in soup.find_all(UNWANTED_TAGS):
             tag.decompose()
-
-        # VALID / SAFE HTML ATTRIBUTES
-        VALID_ATTRIBUTES = {
-            "class", "id", "src", "href", "alt", "title", "value",
-            "type", "name", "width", "height", "role"
-        }
-
-        # Strip invalid or broken attributes
+    
+    @staticmethod
+    def sanitize_attributes(soup: BeautifulSoup) -> None:
+        """Remove invalid attributes and clean valid ones."""
         for tag in soup.find_all(True):
             for attr in list(tag.attrs.keys()):
                 if attr not in VALID_ATTRIBUTES:
                     del tag.attrs[attr]
                 else:
                     value = tag[attr]
-
-                    # Clean lists or strings
                     if isinstance(value, list):
-                        cleaned_values = [
-                            # Remove leading/trailing escaped quotes (e.g., \"value\" -> value)
-                            re.sub(r'^\\?"|\\?"$', '', v).replace('\\"', '').strip()
-                            for v in value if isinstance(v, str)
-                        ]
-                        tag[attr] = cleaned_values
+                        tag[attr] = [HTMLCleaner.clean_attribute_value(v) for v in value if isinstance(v, str)]
                     elif isinstance(value, str):
-                        # Remove leading/trailing escaped quotes and unescape inner quotes
-                        tag[attr] = re.sub(r'^\\?"|\\?"$', '', value).replace('\\"', '').strip()
-
-        # Remove inline styles and JS event handlers
+                        tag[attr] = HTMLCleaner.clean_attribute_value(value)
+    
+    @staticmethod
+    def remove_event_handlers(soup: BeautifulSoup) -> None:
+        """Remove inline styles and JavaScript event handlers."""
         for tag in soup.find_all(style=True):
             del tag['style']
         for tag in soup.find_all(onclick=True):
             del tag['onclick']
-
-        # Remove HTML comments
+    
+    @staticmethod
+    def remove_comments(soup: BeautifulSoup) -> None:
+        """Remove HTML comments."""
         if Comment:
             for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
                 comment.extract()
-
-        # Remove empty tags except root
-        for tag in soup.find_all():
-            if tag.name not in ('html', 'head', 'body') and not tag.get_text(strip=True):
-                tag.decompose()
-
-        # Clean whitespace
-        html_str = str(soup)
-        # Replace all newlines and carriage returns with single space
-        html_str = re.sub(r'[\r\n]+', ' ', html_str)
-        # Replace multiple consecutive spaces with single space
-        html_str = re.sub(r'\s{2,}', ' ', html_str)
-
-        return html_str.strip()
     
-    def summarize_html(self, html_content: str) -> Optional[str]:
+    @staticmethod
+    def remove_empty_tags(soup: BeautifulSoup) -> None:
+        """Remove empty tags except root elements."""
+        for tag in soup.find_all():
+            if tag.name not in ROOT_TAGS and not tag.get_text(strip=True):
+                tag.decompose()
+    
+    @staticmethod
+    def normalize_whitespace(html: str) -> str:
+        """Normalize whitespace in HTML string."""
+        html = re.sub(r'[\r\n]+', ' ', html)
+        html = re.sub(r'\s{2,}', ' ', html)
+        return html.strip()
+    
+    @classmethod
+    def clean(cls, html_content: str) -> str:
+        """Clean and sanitize HTML content."""
+        if not BeautifulSoup:
+            return html_content
+        
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        cls.remove_unwanted_tags(soup)
+        cls.sanitize_attributes(soup)
+        cls.remove_event_handlers(soup)
+        cls.remove_comments(soup)
+        cls.remove_empty_tags(soup)
+        
+        return cls.normalize_whitespace(str(soup))
+
+
+class ArticleSummarizer:
+    """Summarize article content using OpenAI."""
+    
+    SUMMARIZATION_PROMPT = """
+    this is somewhat cleaned html of a news article. 
+    condense the content of the article into 3 lines. 
+    also provide a short title (think 3 words). 
+    ignore ads and unrelated stories/info. 
+    speak objectively, and dont provide a meta perspective, but offer the news as an original source.  
+    """
+    
+    @staticmethod
+    def summarize(html_content: str) -> Optional[str]:
         """Summarize HTML content using OpenAI API."""
         if not OpenAI:
             print("Warning: OpenAI not installed. Run: pip install openai", file=sys.stderr)
@@ -139,52 +157,34 @@ class GoogleNewsRSS:
         
         try:
             client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-            
             response = client.responses.create(
-                model="gpt-5.1",
-                instructions="""
-                this is somewhat cleaned html of a news article. 
-                condense the content of the article into 3 lines. 
-                also provide a short title (think 3 words). 
-                ignore ads and unrelated stories/info. 
-                speak objectively, and dont provide a meta perspective, but offer the news as an original source.  
-                """,
+                model="gpt-5-nano",
+                instructions=ArticleSummarizer.SUMMARIZATION_PROMPT,
                 input=html_content,
             )
-            
             return response.output_text
         except Exception as e:
             print(f"    Warning: Failed to summarize: {e}", file=sys.stderr)
             return None
+
+
+def build_search_url(config: Config) -> str:
+    """Build search feed URL."""
+    params = {
+        "q": config.search_query,
+        "hl": config.hl,
+        "gl": config.gl,
+        "ceid": config.ceid,
+        "num": config.max_items
+    }
+    return f"https://news.google.com/rss/search?{urllib.parse.urlencode(params)}"
+
+
+class RSSParser:
+    """Parse RSS feed XML."""
     
-    def build_feed_url(self) -> str:
-        """Build RSS feed URL based on configuration mode."""
-        mode = self.config.mode.lower().strip()
-        params = {"hl": self.config.hl, "gl": self.config.gl, "ceid": self.config.ceid}
-        
-        if mode == "search":
-            base = "https://news.google.com/rss/search"
-            params["q"] = self.config.search_query
-            params["num"] = self.config.max_items
-        elif mode == "topic":
-            topic = self.config.topic.strip().upper().replace(" ", "_")
-            base = f"https://news.google.com/rss/headlines/section/topic/{urllib.parse.quote(topic)}"
-            params["num"] = self.config.max_items
-        elif mode == "custom":
-            return self.config.custom_url
-        else:
-            raise ValueError("mode must be 'search', 'topic', or 'custom'")
-        
-        return f"{base}?{urllib.parse.urlencode(params)}"
-    
-    def fetch_rss(self, url: str) -> str:
-        """Fetch RSS feed XML from URL."""
-        req = urllib.request.Request(url, headers=self.config.headers, method="GET")
-        with urllib.request.urlopen(req, timeout=self.config.timeout) as resp:
-            charset = resp.headers.get_content_charset() or "utf-8"
-            return resp.read().decode(charset, errors="replace")
-    
-    def parse_rss(self, xml_text: str) -> tuple[str, str, List[Dict[str, Optional[str]]]]:
+    @staticmethod
+    def parse(xml_text: str) -> tuple[str, str, List[Dict[str, Optional[str]]]]:
         """Parse RSS XML and extract feed metadata and items."""
         root = ET.fromstring(xml_text)
         channel = root.find("channel")
@@ -200,13 +200,21 @@ class GoogleNewsRSS:
                 "link": (item.findtext("link") or "").strip(),
                 "source": (item.findtext("source") or "").strip() or None,
                 "pubDate": (item.findtext("pubDate") or "").strip(),
+                "description": (item.findtext("description") or "").strip() or None,
             }
             for item in channel.findall("item")
         ]
         
         return feed_title, feed_link, items
+
+
+class ArticleFetcher:
+    """Fetch article HTML content using Playwright."""
     
-    def fetch_article_html(self, items: List[Dict[str, Optional[str]]]) -> None:
+    def __init__(self, config: Config):
+        self.config = config
+    
+    def fetch_articles(self, items: List[Dict[str, Optional[str]]]) -> None:
         """Fetch HTML content for articles using Playwright."""
         if not sync_playwright:
             print("Warning: Playwright not installed. Run: pip install playwright && playwright install", file=sys.stderr)
@@ -219,33 +227,42 @@ class GoogleNewsRSS:
             page = browser.new_page(user_agent=self.config.user_agent)
             
             for i, item in enumerate(items, start=1):
-                url = item.get("link")
-                if not url:
-                    continue
-                
-                print(f"  [{i}/{len(items)}] {item.get('title', 'Untitled')[:60]}...")
-                try:
-                    page.goto(url, wait_until="domcontentloaded", timeout=self.config.timeout * 1000)
-                    page.wait_for_timeout(2000)
-                    html = page.content()
-                    
-                    # Strip and clean the HTML
-                    cleaned_html = self.strip_html(html)
-                    item["html_content"] = cleaned_html
-                    
-                    # Summarize the HTML content if enabled
-                    if self.config.summarize:
-                        summary = self.summarize_html(cleaned_html)
-                        if summary:
-                            item["summary"] = summary
-                except Exception as e:
-                    print(f"    Warning: Failed to fetch: {e}", file=sys.stderr)
-                    item["html_content"] = None
+                self._fetch_single_article(page, item, i, len(items))
             
             browser.close()
         print()
     
-    def print_items(self, feed_title: str, items: List[Dict[str, Optional[str]]]) -> None:
+    def _fetch_single_article(self, page, item: Dict, index: int, total: int) -> None:
+        """Fetch and process a single article."""
+        url = item.get("link")
+        if not url:
+            return
+        
+        print(f"  [{index}/{total}] {item.get('title', 'Untitled')[:60]}...")
+        
+        try:
+            page.goto(url, wait_until="domcontentloaded", timeout=self.config.timeout * 1000)
+            page.wait_for_timeout(2000)
+            html = page.content()
+            
+            # Clean HTML
+            cleaned_html = HTMLCleaner.clean(html)
+            item["html_content"] = cleaned_html
+            
+            # Summarize
+            summary = ArticleSummarizer.summarize(cleaned_html)
+            if summary:
+                item["summary"] = summary
+        except Exception as e:
+            print(f"    Warning: Failed to fetch: {e}", file=sys.stderr)
+            item["html_content"] = None
+
+
+class OutputManager:
+    """Handle output formatting."""
+    
+    @staticmethod
+    def print_items(feed_title: str, items: List[Dict[str, Optional[str]]]) -> None:
         """Print feed items to console."""
         print(f"\nFeed: {feed_title}")
         print("-" * (6 + len(feed_title)))
@@ -256,43 +273,47 @@ class GoogleNewsRSS:
                 print(f"     Source: {item['source']}")
             if item.get("pubDate"):
                 print(f"     Date:   {item['pubDate']}")
+            if item.get("description"):
+                print(f"     Description: {item['description']}")
             print(f"     Link:   {item.get('link') or ''}")
             if item.get("summary"):
                 print(f"     Summary:\n     {item['summary']}")
             print()
+
+
+class GoogleNewsRSS:
+    """Main orchestrator for Google News RSS fetching."""
     
-    def save_json(self, feed_title: str, feed_link: str, items: List[Dict[str, Optional[str]]]) -> None:
-        """Save feed data to JSON file."""
-        output = {
-            "fetched_at": datetime.utcnow().isoformat() + "Z",
-            "title": feed_title,
-            "link": feed_link,
-            "items": items,
-        }
-        
-        with open(self.config.output_file, "w", encoding="utf-8") as f:
-            json.dump(output, f, ensure_ascii=False, indent=2)
-        
-        print(f"Saved {len(items)} items to {self.config.output_file}")
+    def __init__(self, config: Config):
+        self.config = config
+        self.article_fetcher = ArticleFetcher(config)
+    
+    def fetch_rss(self, url: str) -> str:
+        """Fetch RSS feed XML from URL."""
+        req = urllib.request.Request(url, headers=self.config.headers, method="GET")
+        with urllib.request.urlopen(req, timeout=self.config.timeout) as resp:
+            charset = resp.headers.get_content_charset() or "utf-8"
+            return resp.read().decode(charset, errors="replace")
     
     def run(self) -> int:
         """Execute the RSS fetcher workflow."""
         try:
-            url = self.build_feed_url()
+            # Build and fetch RSS feed
+            url = build_search_url(self.config)
             print(f"Fetching: {url}")
             
             xml_text = self.fetch_rss(url)
-            feed_title, feed_link, items = self.parse_rss(xml_text)
+            feed_title, feed_link, items = RSSParser.parse(xml_text)
             
+            # Limit items
             items = items[:self.config.max_items]
             
-            if self.config.fetch_html and items:
-                self.fetch_article_html(items)
+            # Fetch article HTML
+            if items:
+                self.article_fetcher.fetch_articles(items)
             
-            self.print_items(feed_title, items)
-            
-            if self.config.save_json:
-                self.save_json(feed_title, feed_link, items)
+            # Output results
+            OutputManager.print_items(feed_title, items)
             
             return 0
         except Exception as e:
@@ -302,32 +323,11 @@ class GoogleNewsRSS:
 
 def main(argv: Optional[List[str]] = None) -> int:
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Fetch Google News RSS feeds with optional HTML content")
-    parser.add_argument('query', nargs='?', help="Search query (overrides default)")
-    parser.add_argument('-m', '--mode', choices=['search', 'topic', 'custom'], help="Feed mode")
-    parser.add_argument('-n', '--max-items', type=int, help="Maximum number of items to fetch")
-    parser.add_argument('--no-html', action='store_true', help="Skip fetching HTML content")
-    parser.add_argument('--no-summarize', action='store_true', help="Skip summarizing HTML content")
-    parser.add_argument('-o', '--output', help="Output JSON file path")
-    
+    parser = argparse.ArgumentParser(description="Fetch and summarize Google News articles")
+    parser.add_argument('query', help="Search query")
     args = parser.parse_args(argv)
     
-    config = Config()
-    
-    # Override config with command line arguments
-    if args.query:
-        config.search_query = args.query
-    if args.mode:
-        config.mode = args.mode
-    if args.max_items:
-        config.max_items = args.max_items
-    if args.no_html:
-        config.fetch_html = False
-    if args.no_summarize:
-        config.summarize = False
-    if args.output:
-        config.output_file = args.output
-    
+    config = Config(search_query=args.query)
     fetcher = GoogleNewsRSS(config)
     return fetcher.run()
 
