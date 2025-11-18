@@ -142,7 +142,7 @@ class ArticleSummarizer:
     condense the content of the article into 3 lines. 
     also provide a short title (think 3 words). 
     ignore ads and unrelated stories/info. 
-    speak objectively, and dont provide a meta perspective, but offer the news as an original source.  
+    speak objectively, and dont provide a meta perspective, but present the news as an original source.  
     """
     
     @staticmethod
@@ -158,7 +158,7 @@ class ArticleSummarizer:
         try:
             client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
             response = client.responses.create(
-                model="gpt-5-nano",
+                model="gpt-5.1",
                 instructions=ArticleSummarizer.SUMMARIZATION_PROMPT,
                 input=html_content,
             )
@@ -220,7 +220,7 @@ class ArticleFetcher:
             print("Warning: Playwright not installed. Run: pip install playwright && playwright install", file=sys.stderr)
             return
         
-        print(f"\nFetching HTML content for {len(items)} articles...")
+        print(f"Using playwright to get {len(items)} articles...")
         
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
@@ -230,7 +230,7 @@ class ArticleFetcher:
                 self._fetch_single_article(page, item, i, len(items))
             
             browser.close()
-        print()
+        #print()
     
     def _fetch_single_article(self, page, item: Dict, index: int, total: int) -> None:
         """Fetch and process a single article."""
@@ -264,21 +264,28 @@ class OutputManager:
     @staticmethod
     def print_items(feed_title: str, items: List[Dict[str, Optional[str]]]) -> None:
         """Print feed items to console."""
-        print(f"\nFeed: {feed_title}")
-        print("-" * (6 + len(feed_title)))
+        print(f"\nFeed: {feed_title}\n")
         
         for i, item in enumerate(items, start=1):
-            print(f"{i:02d}. {item.get('title') or '(no title)'}")
-            if item.get("source"):
-                print(f"     Source: {item['source']}")
-            if item.get("pubDate"):
-                print(f"     Date:   {item['pubDate']}")
-            if item.get("description"):
-                print(f"     Description: {item['description']}")
-            print(f"     Link:   {item.get('link') or ''}")
-            if item.get("summary"):
-                print(f"     Summary:\n     {item['summary']}")
-            print()
+            title = item.get('title') or '(no title)'
+            source = item.get('source')
+            pub_date = item.get('pubDate')
+            description = item.get('description')
+            link = item.get('link') or ''
+            summary = item.get('summary')
+            
+            print(f"{i:02d}. {title}")
+            if source:
+                print(f"Source: {source}")
+            if pub_date:
+                print(f"Date: {pub_date}")
+            #if description:
+                #print(f"Description: {description}")
+            #if link:
+                #print(f"Link: {link}")
+            if summary:
+                print(f"bot summary:\n{summary}")
+            #print()
 
 
 class GoogleNewsRSS:
