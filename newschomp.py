@@ -47,7 +47,7 @@ class Config:
     max_items: int = 1
     
     # Network settings
-    timeout: int = 15
+    timeout: int = 30
     user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     
     @property
@@ -241,8 +241,8 @@ class ArticleFetcher:
         print(f"  [{index}/{total}] {item.get('title', 'Untitled')[:60]}...")
         
         try:
-            page.goto(url, wait_until="domcontentloaded", timeout=self.config.timeout * 1000)
-            page.wait_for_timeout(2000)
+            page.goto(url, wait_until="load", timeout=self.config.timeout * 1000)
+            page.wait_for_timeout(3000)
             html = page.content()
             
             # Clean HTML
