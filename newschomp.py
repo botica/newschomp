@@ -10,10 +10,23 @@ from openai import OpenAI
 
 TIMEOUT_SECONDS = 30
 GPT_MODEL = "gpt-5.1"
+MAX_ARTICLES = 1
 
 VALID_ATTRIBUTES = {"class", "id", "src", "href", "alt", "title", "value", "type", "name", "width", "height", "role"}
 UNWANTED_TAGS = ['script', 'style', 'meta', 'link', 'iframe', 'noscript', 'path', 'svg']
 ROOT_TAGS = ('html', 'head', 'body')
+
+
+class Article:
+    def __init__(self, title, link, source, pub_date, description):
+        self.title = title
+        self.link = link
+        self.source = source
+        self.pub_date = pub_date
+        self.description = description
+        self.raw_html = None
+        self.html_content = None
+        self.summary = None
 
 
 def clean_html(html_content):
@@ -93,85 +106,71 @@ def parse_rss(xml_text):
     channel = soup.find("channel")
     if not channel:
         raise ValueError("invalid RSS: no channel element found")
-    feed_title = (channel.find("title").text if channel.find("title") else "").strip()
-    items = [
-        {
-            "title": (item.find("title").text if item.find("title") else "").strip(),
-            "link": (item.find("link").text if item.find("link") else "").strip(),
-            "source": (item.find("source").text if item.find("source") else "").strip() or None,
-            "pubDate": (item.find("pubDate").text if item.find("pubDate") else "").strip(),
-            "description": (item.find("description").text if item.find("description") else "").strip() or None,
-        }
+    articles = [
+        Article(
+            title=(item.find("title").text if item.find("title") else "").strip(),
+            link=(item.find("link").text if item.find("link") else "").strip(),
+            source=(item.find("source").text if item.find("source") else "").strip() or None,
+            pub_date=(item.find("pubDate").text if item.find("pubDate") else "").strip(),
+            description=(item.find("description").text if item.find("description") else "").strip() or None,
+        )
         for item in channel.find_all("item")
     ]
-    return feed_title, items
+    return articles
 
 
-def fetch_article(page, item):
-    """Fetch and process a single article."""
-    url = item.get("link")
-    print(f"fetching: {item.get('title', 'Untitled')[:60]}...")
-    try:
-        page.goto(url, wait_until="load", timeout=TIMEOUT_SECONDS * 1000)
-        page.wait_for_timeout(TIMEOUT_SECONDS * 100)
-        print('done waitin fer page')
-        html = page.content()
-        cleaned_html = clean_html(html)
-        print('html cleaned up nice and good')
-        item["html_content"] = cleaned_html
-        print(f'summarizin w {GPT_MODEL}')
-        summary = summarize_html(cleaned_html)
-        print('summarized')
-        item["summary"] = summary
-    except Exception as e:
-        print(f"no fetch: {e}", file=sys.stderr)
-        item["html_content"] = None
-
-
-def fetch_articles(items):
+def fetch_articles(articles):
     """Fetch HTML content for articles using Playwright."""
-    print(f"hi playwright to get {len(items)} articles...")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-        for item in items:
-            fetch_article(page, item)
+        for article in articles:
+            url = article.link
+            if not url:
+                continue
+            try:
+                page.goto(url, wait_until="load", timeout=TIMEOUT_SECONDS * 1000)
+                page.wait_for_timeout(TIMEOUT_SECONDS * 100)
+                html = page.content()
+                article.raw_html = html
+            except Exception as e:
+                print(f"no fetch: {e}", file=sys.stderr)
+                article.raw_html = None
         browser.close()
 
 
-def print_items(feed_title, items):
-    for i, item in enumerate(items, start=1):
-        title = item.get('title') or '(no title)'
-        source = item.get('source')
-        pub_date = item.get('pubDate')
-        summary = item.get('summary')
+def main():
+    query = sys.argv[1]
+    url = build_search_url(query)
+    print(f"fetching: {url}")
+    xml_text = fetch_rss(url)
+    print('parsing google news feed xml now')
+    articles = parse_rss(xml_text)
+    articles = articles[:MAX_ARTICLES]
+    print('using playwright to gather html')
+    fetch_articles(articles)
+    for article in articles:
+        if article.raw_html:
+            print('cleanin html')
+            cleaned_html = clean_html(article.raw_html)
+            print('html cleaned up nice and good')
+            article.html_content = cleaned_html
+            print(f'summarizin w {GPT_MODEL}')
+            summary = summarize_html(cleaned_html)
+            print('summarized')
+            article.summary = summary
+        title = article.title or '(no title)'
+        source = article.source
+        pub_date = article.pub_date
+        summary = article.summary
         print(f"title: {title}")
-        print(f"source: {source}")
-        print(f"date: {pub_date}")
-        print(f"summary:\n{summary}")
-
-
-def main(argv=None):
-    """Main entry point."""
-    if argv is None:
-        argv = sys.argv[1:]
-    if len(argv) < 1:
-        print("$newschomp.py <search_query>", file=sys.stderr)
-        return 1
-    query = argv[0]
-    try:
-        url = build_search_url(query)
-        print(f"fetching: {url}")
-        xml_text = fetch_rss(url)
-        feed_title, items = parse_rss(xml_text)
-        items = items[:1]
-        if items:
-            fetch_articles(items)
-        print_items(feed_title, items)
-        return 0
-    except Exception as e:
-        print(f"err: {e}", file=sys.stderr)
-        return 1
+        if source:
+            print(f"source: {source}")
+        if pub_date:
+            print(f"date: {pub_date}")
+        if summary:
+            print(f"summary:\n{summary}")
+    return 0
 
 if __name__ == "__main__":
     main()
