@@ -10,9 +10,8 @@ from bs4 import BeautifulSoup, Comment
 from playwright.sync_api import sync_playwright
 from openai import OpenAI
 
-TIMEOUT = 30
-GPT = "gpt-5-nano"
-MAX_ART = 1 # how many articles to fetch html for and summarize
+TIMEOUT = 5
+GPT = "gpt-5.1"
 
 VALID_ATTRIBUTES = {"class", "id", "src", "href", "alt", "title", "value", "type", "name", "width", "height", "role"}
 UNWANTED_TAGS = ['script', 'style', 'meta', 'link', 'iframe', 'noscript', 'path', 'svg']
@@ -30,7 +29,7 @@ class Article:
         """fetches and stores html content using playwright browser page"""
         try:
             page.goto(self.url, wait_until="load", timeout=TIMEOUT * 1000)
-            page.wait_for_timeout(TIMEOUT * 100)
+            page.wait_for_timeout(TIMEOUT * 1000) #5000 ms
             self.url = page.url # update the url
             self.html_content = page.content()
         except Exception as e:
@@ -130,28 +129,38 @@ def main():
     xml = fetch_xml(url)
     print('parsing google news feed xml now')
     articles = build_articles(xml) # parses xml for rss feed; gathers attributes from rss items and returns a list of Article objects
-    print(len(articles))
+    print(f'there are {len(articles)} articles.')
     for a in articles:
         print (a.title)
     article_pool = [] # new list to keep track of attempted summaries
-    article_pool.append(articles.pop())
-    print('using playwright to gather html')
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-        for article in article_pool:
+        while articles:  # Loop while there are articles left
+            article_pool.append(articles.pop())  # Pop the next article
+            article = article_pool[-1]  # Get the latest added article
             print(f'fetching html for {article.title}')
-            article.gather_html(page) # retrieve html for each google news rss item and set to self.html_content
-        browser.close() # done with playwright
-    for article in article_pool:
-        print(f'cleanin {article.title}')
-        article.clean_html() # strips self.html_content
-        print(f'summarizin w {GPT}')
-        summary = article.summarize() # call to OpenAI model
-        print(f"title: {article.title}")
-        print(f"source: {article.url}")
-        print(f"date: {article.pub_date}")
-        print(f"summary:\n{summary}")
+            article.gather_html(page)  # Fetch HTML for the new article
+            if article.html_content is None:
+                print(f"Failed to fetch HTML for {article.title}, trying next article...")
+                continue  # Skip to next article
+            print(f'cleanin {article.title}')
+            article.clean_html()  # Clean the HTML
+            print(f'summarizin w {GPT}')
+            summary = article.summarize()  # Attempt summarization
+            if summary is not None:
+                # Successful summary, print and exit loop
+                print(f"title: {article.title}")
+                print(f"source: {article.url}")
+                print(f"date: {article.pub_date}")
+                print(f"summary:\n{summary}")
+                break
+            else:
+                print(f"Summary failed for {article.title}, trying next article...")
+        else:
+            # No more articles or all failed
+            print("No successful summary obtained from available articles.")
+        browser.close()  # Close browser after loop
 
 if __name__ == "__main__":
     main()
