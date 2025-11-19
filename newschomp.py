@@ -1,29 +1,15 @@
-"""Google News RSS Fetcher - Fetch and summarize news articles."""
-
-import argparse
 import os
 import re
 import sys
 import urllib.parse
 import urllib.request
-import xml.etree.ElementTree as ET
 
-try:
-    from bs4 import BeautifulSoup, Comment
-except ImportError:
-    BeautifulSoup = None
-    Comment = None
+from bs4 import BeautifulSoup, Comment
+from playwright.sync_api import sync_playwright
+from openai import OpenAI
 
-try:
-    from playwright.sync_api import sync_playwright
-except ImportError:
-    sync_playwright = None
-
-try:
-    from openai import OpenAI
-except ImportError:
-    OpenAI = None
-
+TIMEOUT_SECONDS = 30
+GPT_MODEL = "gpt-5.1"
 
 VALID_ATTRIBUTES = {"class", "id", "src", "href", "alt", "title", "value", "type", "name", "width", "height", "role"}
 UNWANTED_TAGS = ['script', 'style', 'meta', 'link', 'iframe', 'noscript', 'path', 'svg']
@@ -32,16 +18,9 @@ ROOT_TAGS = ('html', 'head', 'body')
 
 def clean_html(html_content):
     """Clean and sanitize HTML content."""
-    if not BeautifulSoup:
-        return html_content
-    
     soup = BeautifulSoup(html_content, 'html.parser')
-    
-    # Remove unwanted tags
     for tag in soup.find_all(UNWANTED_TAGS):
         tag.decompose()
-    
-    # Remove invalid attributes
     for tag in soup.find_all(True):
         for attr in list(tag.attrs.keys()):
             if attr not in VALID_ATTRIBUTES:
@@ -52,24 +31,15 @@ def clean_html(html_content):
                     tag[attr] = [re.sub(r'^\\?"|\\?"$', '', v).replace('\\"', '').strip() for v in value if isinstance(v, str)]
                 elif isinstance(value, str):
                     tag[attr] = re.sub(r'^\\?"|\\?"$', '', value).replace('\\"', '').strip()
-    
-    # Remove inline styles and event handlers
     for tag in soup.find_all(style=True):
         del tag['style']
     for tag in soup.find_all(onclick=True):
         del tag['onclick']
-    
-    # Remove comments
-    if Comment:
-        for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
-            comment.extract()
-    
-    # Remove empty tags
+    for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
+        comment.extract()
     for tag in soup.find_all():
         if tag.name not in ROOT_TAGS and not tag.get_text(strip=True):
             tag.decompose()
-    
-    # Normalize whitespace
     html = str(soup)
     html = re.sub(r'[\r\n]+', ' ', html)
     html = re.sub(r'\s{2,}', ' ', html)
@@ -78,13 +48,10 @@ def clean_html(html_content):
 
 def summarize_html(html_content):
     """Summarize HTML content using OpenAI API."""
-    if not OpenAI or not html_content:
-        return None
-    
     try:
         client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         response = client.responses.create(
-            model="gpt-5-nano",
+            model=GPT_MODEL,
             instructions="""
             this is somewhat cleaned html of a news article. 
             condense the content of the article into 3 lines. 
@@ -96,7 +63,7 @@ def summarize_html(html_content):
         )
         return response.output_text
     except Exception as e:
-        print(f"Warning: Failed to summarize: {e}", file=sys.stderr)
+        print(f"failed to summarize: {e}", file=sys.stderr)
         return None
 
 
@@ -115,120 +82,96 @@ def fetch_rss(url):
         "Connection": "keep-alive",
     }
     req = urllib.request.Request(url, headers=headers, method="GET")
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as resp:
         charset = resp.headers.get_content_charset() or "utf-8"
         return resp.read().decode(charset, errors="replace")
 
 
 def parse_rss(xml_text):
     """Parse RSS XML and extract feed items."""
-    root = ET.fromstring(xml_text)
-    channel = root.find("channel")
+    soup = BeautifulSoup(xml_text, 'xml')
+    channel = soup.find("channel")
     if not channel:
-        raise ValueError("Invalid RSS: no channel element found")
-    
-    feed_title = (channel.findtext("title") or "").strip()
-    
+        raise ValueError("invalid RSS: no channel element found")
+    feed_title = (channel.find("title").text if channel.find("title") else "").strip()
     items = [
         {
-            "title": (item.findtext("title") or "").strip(),
-            "link": (item.findtext("link") or "").strip(),
-            "source": (item.findtext("source") or "").strip() or None,
-            "pubDate": (item.findtext("pubDate") or "").strip(),
-            "description": (item.findtext("description") or "").strip() or None,
+            "title": (item.find("title").text if item.find("title") else "").strip(),
+            "link": (item.find("link").text if item.find("link") else "").strip(),
+            "source": (item.find("source").text if item.find("source") else "").strip() or None,
+            "pubDate": (item.find("pubDate").text if item.find("pubDate") else "").strip(),
+            "description": (item.find("description").text if item.find("description") else "").strip() or None,
         }
-        for item in channel.findall("item")
+        for item in channel.find_all("item")
     ]
-    
     return feed_title, items
 
 
 def fetch_article(page, item):
     """Fetch and process a single article."""
     url = item.get("link")
-    if not url:
-        return
-    
-    print(f"  Fetching: {item.get('title', 'Untitled')[:60]}...")
-    
+    print(f"fetching: {item.get('title', 'Untitled')[:60]}...")
     try:
-        page.goto(url, wait_until="load", timeout=30000)
-        page.wait_for_timeout(3000)
+        page.goto(url, wait_until="load", timeout=TIMEOUT_SECONDS * 1000)
+        page.wait_for_timeout(TIMEOUT_SECONDS * 100)
+        print('done waitin fer page')
         html = page.content()
-        
         cleaned_html = clean_html(html)
+        print('html cleaned up nice and good')
         item["html_content"] = cleaned_html
-        
+        print(f'summarizin w {GPT_MODEL}')
         summary = summarize_html(cleaned_html)
-        if summary:
-            item["summary"] = summary
+        print('summarized')
+        item["summary"] = summary
     except Exception as e:
-        print(f"    Warning: Failed to fetch: {e}", file=sys.stderr)
+        print(f"no fetch: {e}", file=sys.stderr)
         item["html_content"] = None
 
 
 def fetch_articles(items):
     """Fetch HTML content for articles using Playwright."""
-    if not sync_playwright:
-        print("Warning: Playwright not installed", file=sys.stderr)
-        return
-    
-    print(f"Using playwright to get {len(items)} articles...")
-    
+    print(f"hi playwright to get {len(items)} articles...")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-        
         for item in items:
             fetch_article(page, item)
-        
         browser.close()
 
 
 def print_items(feed_title, items):
-    """Print feed items to console."""
-    print(f"\nFeed: {feed_title}\n")
-    
     for i, item in enumerate(items, start=1):
         title = item.get('title') or '(no title)'
         source = item.get('source')
         pub_date = item.get('pubDate')
         summary = item.get('summary')
-        
-        print(f"{i:02d}. {title}")
-        if source:
-            print(f"Source: {source}")
-        if pub_date:
-            print(f"Date: {pub_date}")
-        if summary:
-            print(f"bot summary:\n{summary}")
+        print(f"title: {title}")
+        print(f"source: {source}")
+        print(f"date: {pub_date}")
+        print(f"summary:\n{summary}")
 
 
 def main(argv=None):
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Fetch and summarize Google News articles")
-    parser.add_argument('query', help="Search query")
-    args = parser.parse_args(argv)
-    
+    if argv is None:
+        argv = sys.argv[1:]
+    if len(argv) < 1:
+        print("$newschomp.py <search_query>", file=sys.stderr)
+        return 1
+    query = argv[0]
     try:
-        url = build_search_url(args.query)
-        print(f"Fetching: {url}")
-        
+        url = build_search_url(query)
+        print(f"fetching: {url}")
         xml_text = fetch_rss(url)
         feed_title, items = parse_rss(xml_text)
-        
         items = items[:1]
-        
         if items:
             fetch_articles(items)
-        
         print_items(feed_title, items)
-        
         return 0
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        print(f"err: {e}", file=sys.stderr)
         return 1
 
-
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
