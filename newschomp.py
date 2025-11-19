@@ -11,7 +11,7 @@ from playwright.sync_api import sync_playwright
 from openai import OpenAI
 
 TIMEOUT = 30
-GPT = "gpt-5.1"
+GPT = "gpt-5-nano"
 MAX_ART = 1 # how many articles to fetch html for and summarize
 
 VALID_ATTRIBUTES = {"class", "id", "src", "href", "alt", "title", "value", "type", "name", "width", "height", "role"}
@@ -25,12 +25,13 @@ class Article:
         self.url = url
         self.pub_date = pub_date
         self.html_content = None
-    
+
     def gather_html(self, page):
         """fetches and stores html content using playwright browser page"""
         try:
             page.goto(self.url, wait_until="load", timeout=TIMEOUT * 1000)
             page.wait_for_timeout(TIMEOUT * 100)
+            self.url = page.url # update the url
             self.html_content = page.content()
         except Exception as e:
             print(f"no fetch for {self.url}: {e}", file=sys.stderr)
@@ -129,16 +130,21 @@ def main():
     xml = fetch_xml(url)
     print('parsing google news feed xml now')
     articles = build_articles(xml) # parses xml for rss feed; gathers attributes from rss items and returns a list of Article objects
-    articles = articles[:MAX_ART] #truncate list to number of desired Articles
+    print(len(articles))
+    for a in articles:
+        print (a.title)
+    article_pool = [] # new list to keep track of attempted summaries
+    article_pool.append(articles.pop())
     print('using playwright to gather html')
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-        for article in articles:
+        for article in article_pool:
+            print(f'fetching html for {article.title}')
             article.gather_html(page) # retrieve html for each google news rss item and set to self.html_content
         browser.close() # done with playwright
-    for article in articles:
-        print('cleanin html')
+    for article in article_pool:
+        print(f'cleanin {article.title}')
         article.clean_html() # strips self.html_content
         print(f'summarizin w {GPT}')
         summary = article.summarize() # call to OpenAI model
