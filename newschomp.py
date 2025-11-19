@@ -27,7 +27,7 @@ class Article:
         self.html_content = None
     
     def gather_html(self, page):
-        """fetches and stores html content using provided browser page"""
+        """fetches and stores html content using playwright browser page"""
         try:
             page.goto(self.url, wait_until="load", timeout=TIMEOUT * 1000)
             page.wait_for_timeout(TIMEOUT * 100)
@@ -36,7 +36,7 @@ class Article:
             print(f"no fetch for {self.url}: {e}", file=sys.stderr)
 
     def clean_html(self):
-        """cleans self.html_content"""
+        """cleans self.html_content of unwanted tags and atrributes"""
         soup = BeautifulSoup(self.html_content, 'html.parser')
         for tag in soup.find_all(UNWANTED_TAGS):
             tag.decompose()
@@ -65,7 +65,7 @@ class Article:
         self.html_content = html.strip()
 
     def summarize(self):
-        """return summary w gpt"""
+        """return string summary from gpt"""
         try:
             client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
             response = client.responses.create(
@@ -86,13 +86,13 @@ class Article:
 
 
 def build_url(query):
-    """build google news url with search query"""
+    """build google news url with search query from command line arg"""
     params = {"q": query, "hl": "en-US", "gl": "US", "ceid": "US:en", "num": 1}
     return f"https://news.google.com/rss/search?{urllib.parse.urlencode(params)}"
 
 
 def fetch_xml(url):
-    """download xml from google news"""
+    """download xml from google news with url string"""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -106,7 +106,7 @@ def fetch_xml(url):
 
 
 def build_articles(xml):
-    """parse google news XML and extract/build articles, returns list of articles"""
+    """parse google news xml string and extract/build articles, return list of articles"""
     soup = BeautifulSoup(xml, 'xml')
     channel = soup.find("channel")
     if not channel:
@@ -128,27 +128,24 @@ def main():
     print(f"fetching: {url}")
     xml = fetch_xml(url)
     print('parsing google news feed xml now')
-    articles = build_articles(xml)
-    articles = articles[:MAX_ART] #truncate to number of desired google article objecs
+    articles = build_articles(xml) # parses xml for rss feed; gathers attributes from rss items and returns a list of Article objects
+    articles = articles[:MAX_ART] #truncate list to number of desired Articles
     print('using playwright to gather html')
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
         for article in articles:
-            article.gather_html(page)
-        browser.close()
+            article.gather_html(page) # retrieve html for each google news rss item and set to self.html_content
+        browser.close() # done with playwright
     for article in articles:
         print('cleanin html')
-        article.clean_html()
+        article.clean_html() # strips self.html_content
         print(f'summarizin w {GPT}')
-        summary = article.summarize()
+        summary = article.summarize() # call to OpenAI model
         print(f"title: {article.title}")
-        if article.url:
-            print(f"source: {article.url}")
-        if article.pub_date:
-            print(f"date: {article.pub_date}")
-        if summary:
-            print(f"summary:\n{summary}")
+        print(f"source: {article.url}")
+        print(f"date: {article.pub_date}")
+        print(f"summary:\n{summary}")
 
 if __name__ == "__main__":
     main()
