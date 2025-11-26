@@ -131,14 +131,14 @@ def generate_summary(content):
         client = OpenAI(api_key=api_key)
 
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5.1",
             messages=[
                 {
                     "role": "system",
                     "content": """You are a news summarizer.
-Condense articles into exactly 3 lines.
-Use specific objects and details from the article.
-Favor imagery and paint a picture. Always be objective.
+Condense articles into 3 lines.
+Use specific objects and details from the article. 
+Be objective.
 Also provide a three word title.
 Ignore ads and unrelated info.
 
@@ -154,7 +154,7 @@ TITLE: <three word title>
                 }
             ],
             temperature=0.7,
-            max_tokens=250
+            max_completion_tokens=250
         )
 
         result = response.choices[0].message.content.strip()
