@@ -34,7 +34,8 @@ def search_article(request):
                             'pub_date': article_data.get('pub_date') or timezone.now(),
                             'content': article_data.get('content', ''),
                             'summary': article_data.get('summary', article_data.get('title', '')),
-                            'ai_title': article_data.get('ai_title', '')
+                            'ai_title': article_data.get('ai_title', ''),
+                            'image_url': article_data.get('image_url', '')
                         }
                     )
 

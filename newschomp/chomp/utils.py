@@ -70,7 +70,7 @@ def extract_apnews_content(html_string):
         html_string: HTML content as string
 
     Returns:
-        dict: Dictionary containing title, url, pub_date, and content
+        dict: Dictionary containing title, url, pub_date, content, and image_url
     """
     soup = BeautifulSoup(html_string, 'html.parser')
 
@@ -81,6 +81,14 @@ def extract_apnews_content(html_string):
 
     # Extract content div
     content_div = soup.find('div', class_='RichTextStoryBody RichTextBody')
+
+    # Extract image from picture tag with data-crop="medium-nocrop"
+    image_url = None
+    picture_tag = soup.find('picture', attrs={'data-crop': 'medium-nocrop'})
+    if picture_tag:
+        img_tag = picture_tag.find('img', class_='Image')
+        if img_tag:
+            image_url = img_tag.get('src')
 
     # Parse publication date
     pub_date = None
@@ -101,7 +109,8 @@ def extract_apnews_content(html_string):
         'title': title_tag.get('content') if title_tag else None,
         'url': url_tag.get('content') if url_tag else None,
         'pub_date': pub_date,
-        'content': content_div.get_text(strip=True) if content_div else None
+        'content': content_div.get_text(strip=True) if content_div else None,
+        'image_url': image_url
     }
 
     return result
