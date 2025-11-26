@@ -82,13 +82,15 @@ def extract_apnews_content(html_string):
     # Extract content div
     content_div = soup.find('div', class_='RichTextStoryBody RichTextBody')
 
-    # Extract image from picture tag with data-crop="medium-nocrop"
+    # Extract image from first picture tag after Page-content div
     image_url = None
-    picture_tag = soup.find('picture', attrs={'data-crop': 'medium-nocrop'})
-    if picture_tag:
-        img_tag = picture_tag.find('img', class_='Image')
-        if img_tag:
-            image_url = img_tag.get('src')
+    page_content_div = soup.find('div', class_='Page-content')
+    if page_content_div:
+        picture_tag = page_content_div.find('picture')
+        if picture_tag:
+            img_tag = picture_tag.find('img', class_='Image')
+            if img_tag:
+                image_url = img_tag.get('src')
 
     # Parse publication date
     pub_date = None
