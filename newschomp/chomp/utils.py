@@ -1,121 +1,6 @@
 import os
-import urllib.parse
-import requests
-from bs4 import BeautifulSoup
-from datetime import datetime
-from django.utils import timezone
 from openai import OpenAI
-
-
-def get_first_search_result_url(query):
-    """
-    Search AP News and get the URL of the first article result.
-    Skips non-article pages (videos, galleries, etc.)
-
-    Args:
-        query: Search query string
-
-    Returns:
-        str: URL of the first article result, or None if not found
-    """
-    # Build search URL
-    encoded_query = urllib.parse.quote(query)
-    search_url = f"https://apnews.com/search?q={encoded_query}&s=3"
-
-    print(f"Searching: {search_url}")
-
-    # Fetch search results page
-    response = requests.get(search_url)
-    response.raise_for_status()
-
-    # Parse search results
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    # Find all results with PagePromo-title
-    promo_titles = soup.find_all('div', class_='PagePromo-title')
-    if not promo_titles:
-        print("No search results found")
-        return None
-
-    # Loop through results to find first valid article URL
-    for promo_title in promo_titles:
-        link_element = promo_title.find('a', class_='Link')
-        if not link_element:
-            continue
-
-        article_url = link_element.get('href')
-        if not article_url:
-            continue
-
-        # Handle relative URLs
-        if not article_url.startswith('http'):
-            article_url = f"https://apnews.com{article_url}"
-
-        # Check if it's an article URL (not video, gallery, etc.)
-        if '/article/' in article_url:
-            print(f"Found article URL: {article_url}")
-            return article_url
-        else:
-            print(f"Skipping non-article URL: {article_url}")
-
-    print("No article URLs found in search results")
-    return None
-
-
-def extract_apnews_content(html_string):
-    """
-    Extract AP News article data from HTML string.
-
-    Args:
-        html_string: HTML content as string
-
-    Returns:
-        dict: Dictionary containing title, url, pub_date, content, and image_url
-    """
-    soup = BeautifulSoup(html_string, 'html.parser')
-
-    # Extract meta tags
-    title_tag = soup.find('meta', property='og:title')
-    url_tag = soup.find('meta', property='og:url')
-    pub_date_tag = soup.find('meta', property='article:published_time')
-
-    # Extract content div
-    content_div = soup.find('div', class_='RichTextStoryBody RichTextBody')
-
-    # Extract image from first picture tag after Page-content div
-    image_url = None
-    page_content_div = soup.find('div', class_='Page-content')
-    if page_content_div:
-        picture_tag = page_content_div.find('picture')
-        if picture_tag:
-            img_tag = picture_tag.find('img', class_='Image')
-            if img_tag:
-                image_url = img_tag.get('src')
-
-    # Parse publication date
-    pub_date = None
-    if pub_date_tag:
-        pub_date_str = pub_date_tag.get('content')
-        if pub_date_str:
-            try:
-                # Parse ISO format datetime
-                pub_date = datetime.fromisoformat(pub_date_str.replace('Z', '+00:00'))
-                # Convert to Django timezone-aware datetime
-                if timezone.is_naive(pub_date):
-                    pub_date = timezone.make_aware(pub_date)
-            except (ValueError, AttributeError):
-                pub_date = timezone.now()
-
-    # Build result dictionary
-    result = {
-        'title': title_tag.get('content') if title_tag else None,
-        'url': url_tag.get('content') if url_tag else None,
-        'pub_date': pub_date,
-        'content': content_div.get_text(strip=True) if content_div else None,
-        'image_url': image_url
-    }
-
-    return result
+from .sources import get_source
 
 
 def generate_summary(content):
@@ -197,31 +82,34 @@ TITLE: <three word title>
         return None
 
 
-def search_and_extract_article(query):
+def search_and_extract_article(query, source_name='apnews'):
     """
-    Search AP News for a query and extract the first result's article data.
+    Search a news source for a query and extract the first result's article data.
 
     Args:
         query: Search query string
+        source_name: Name of the news source to use (default: 'apnews')
 
     Returns:
-        dict: Extracted article data or None if search/extraction fails
+        dict: Extracted article data with 'source' key, or None if search/extraction fails
     """
-    # Get first search result URL
-    article_url = get_first_search_result_url(query)
-
-    if not article_url:
+    # Get the news source instance
+    source = get_source(source_name)
+    if not source:
+        print(f"Unknown news source: {source_name}")
         return None
 
-    # Fetch article page
-    response = requests.get(article_url)
-    response.raise_for_status()
+    # Use the source to search and extract
+    extracted_data = source.search_and_extract(query)
 
-    # Extract content
-    extracted_data = extract_apnews_content(response.text)
+    if not extracted_data:
+        return None
+
+    # Add source information to the data
+    extracted_data['source'] = source.source_key
 
     # Generate summary and title if content exists
-    if extracted_data and extracted_data.get('content'):
+    if extracted_data.get('content'):
         ai_data = generate_summary(extracted_data['content'])
         if ai_data:
             extracted_data['summary'] = ai_data.get('summary')

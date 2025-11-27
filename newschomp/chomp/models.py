@@ -9,6 +9,7 @@ class Article(models.Model):
     summary = models.TextField(null=True, blank=True)
     ai_title = models.CharField(max_length=100, null=True, blank=True)
     image_url = models.URLField(max_length=500, null=True, blank=True)
+    source = models.CharField(max_length=50, default='apnews')
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

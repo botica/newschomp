@@ -22,8 +22,9 @@ def search_article(request):
             query = form.cleaned_data['query']
 
             try:
-                # Search and extract article data
-                article_data = search_and_extract_article(query)
+                # Search and extract article data (defaults to 'apnews' source)
+                # TODO: Add source selection in form to support multiple news sources
+                article_data = search_and_extract_article(query, source_name='apnews')
 
                 if article_data and article_data.get('title') and article_data.get('url'):
                     # Create or update Article object
@@ -35,7 +36,8 @@ def search_article(request):
                             'content': article_data.get('content', ''),
                             'summary': article_data.get('summary', article_data.get('title', '')),
                             'ai_title': article_data.get('ai_title', ''),
-                            'image_url': article_data.get('image_url', '')
+                            'image_url': article_data.get('image_url', ''),
+                            'source': article_data.get('source', 'apnews')
                         }
                     )
 

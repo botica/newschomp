@@ -1,0 +1,151 @@
+/* NewsChomp Styles */
+
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+
+h1, h2 {
+    color: #ffffff;
+}
+
+.search-container {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #2d2d2d;
+    border-radius: 8px;
+    border: 1px solid #404040;
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #404040;
+    border-radius: 4px;
+    font-size: 16px;
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #4a9eff;
+}
+
+.search-button {
+    padding: 10px 20px;
+    background: #4a9eff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.search-button:hover {
+    background: #357abd;
+}
+
+.messages {
+    margin-bottom: 20px;
+}
+
+.message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.message.success {
+    background: #1e4620;
+    color: #7cff7f;
+    border: 1px solid #2d6930;
+}
+
+.message.error {
+    background: #4a1f1f;
+    color: #ff7f7f;
+    border: 1px solid #6b2d2d;
+}
+
+.message.info {
+    background: #1f3a4a;
+    color: #7fcdff;
+    border: 1px solid #2d5469;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+/* Article list items only */
+body > ul > li {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #2d2d2d;
+    border: 1px solid #404040;
+    border-radius: 4px;
+}
+
+h3 {
+    margin: 0 0 10px 0;
+}
+
+a {
+    color: #4a9eff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #7bb8ff;
+}
+
+.summary {
+    margin: 20px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.summary li {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: #ffffff;
+    margin-bottom: 15px;
+    padding-left: 30px;
+    position: relative;
+}
+
+.summary li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #4a9eff;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.article-meta {
+    color: #888;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.article-image {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    border-radius: 4px;
+    margin: 10px 0;
+}
