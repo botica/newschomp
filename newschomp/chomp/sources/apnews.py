@@ -99,7 +99,16 @@ class APNewsSource(NewsSource):
             if picture_tag:
                 img_tag = picture_tag.find('img', class_='Image')
                 if img_tag:
-                    image_url = img_tag.get('src')
+                    # Try lazy-load attributes first (AP News uses Flickity lazy loading)
+                    image_url = (img_tag.get('data-flickity-lazyload') or
+                                img_tag.get('src'))
+
+                    # If we got a srcset, extract the first URL
+                    if not image_url or image_url.startswith('data:'):
+                        srcset = img_tag.get('data-flickity-lazyload-srcset')
+                        if srcset:
+                            # Extract first URL from srcset (before "1x" or "2x")
+                            image_url = srcset.split()[0]
 
         # Parse publication date
         pub_date = None
