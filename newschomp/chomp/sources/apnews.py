@@ -19,18 +19,18 @@ class APNewsSource(NewsSource):
 
     def search(self, query):
         """
-        Search AP News and get the URL of the first article result.
+        Search AP News and get URLs of article results sorted by relevance.
         Skips non-article pages (videos, galleries, etc.)
 
         Args:
             query: Search query string
 
         Returns:
-            str: URL of the first article result, or None if not found
+            list: List of article URLs sorted by relevance, or empty list if not found
         """
-        # Build search URL
+        # Build search URL - s=0 sorts by relevance
         encoded_query = urllib.parse.quote(query)
-        search_url = f"https://apnews.com/search?q={encoded_query}&s=3"
+        search_url = f"https://apnews.com/search?q={encoded_query}&s=0"
 
         print(f"Searching AP News: {search_url}")
 
@@ -45,9 +45,10 @@ class APNewsSource(NewsSource):
         promo_titles = soup.find_all('div', class_='PagePromo-title')
         if not promo_titles:
             print("No search results found")
-            return None
+            return []
 
-        # Loop through results to find first valid article URL
+        # Collect all valid article URLs
+        article_urls = []
         for promo_title in promo_titles:
             link_element = promo_title.find('a', class_='Link')
             if not link_element:
@@ -64,12 +65,16 @@ class APNewsSource(NewsSource):
             # Check if it's an article URL (not video, gallery, etc.)
             if '/article/' in article_url:
                 print(f"Found article URL: {article_url}")
-                return article_url
+                article_urls.append(article_url)
             else:
                 print(f"Skipping non-article URL: {article_url}")
 
-        print("No article URLs found in search results")
-        return None
+        if not article_urls:
+            print("No article URLs found in search results")
+        else:
+            print(f"Found {len(article_urls)} article URLs sorted by relevance")
+
+        return article_urls
 
     def extract(self, html_string):
         """

@@ -3,7 +3,9 @@ from django.contrib import messages
 from django.utils import timezone
 from .models import Article
 from .forms import ArticleSearchForm
-from .utils import search_and_extract_article
+from .utils import generate_summary
+from .sources import get_source
+import requests
 
 
 def home(request):
@@ -22,34 +24,69 @@ def search_article(request):
             query = form.cleaned_data['query']
 
             try:
-                # Search and extract article data (defaults to 'apnews' source)
-                # TODO: Add source selection in form to support multiple news sources
-                article_data = search_and_extract_article(query, source_name='apnews')
+                # Get the news source
+                source = get_source('apnews')
+                if not source:
+                    messages.error(request, 'News source not available.')
+                    return redirect('home')
 
-                if article_data and article_data.get('title') and article_data.get('url'):
-                    # Create or update Article object
-                    article, created = Article.objects.update_or_create(
-                        url=article_data['url'],
-                        defaults={
-                            'title': article_data['title'],
-                            'pub_date': article_data.get('pub_date') or timezone.now(),
-                            'content': article_data.get('content', ''),
-                            'summary': article_data.get('summary', article_data.get('title', '')),
-                            'ai_title': article_data.get('ai_title', ''),
-                            'image_url': article_data.get('image_url', ''),
-                            'source': article_data.get('source', 'apnews')
-                        }
-                    )
+                # Search for articles (returns list of URLs sorted by relevance)
+                article_urls = source.search(query)
 
-                    if created:
-                        messages.success(request, f'Article "{article.title}" added successfully with AI summary!')
+                if not article_urls:
+                    messages.error(request, 'No articles found for your search query.')
+                    return redirect('home')
+
+                # Iterate through URLs and find first non-duplicate
+                article_added = False
+                for article_url in article_urls:
+                    # Check if this URL already exists in database
+                    if Article.objects.filter(url=article_url).exists():
+                        print(f"Skipping duplicate article: {article_url}")
+                        continue
+
+                    # This is a new article, fetch and extract it
+                    print(f"Fetching new article: {article_url}")
+                    response = requests.get(article_url)
+                    response.raise_for_status()
+
+                    # Extract article data
+                    article_data = source.extract(response.text)
+
+                    if article_data and article_data.get('title') and article_data.get('url'):
+                        # Generate AI summary
+                        if article_data.get('content'):
+                            ai_data = generate_summary(article_data['content'])
+                            if ai_data:
+                                article_data['summary'] = ai_data.get('summary')
+                                article_data['ai_title'] = ai_data.get('ai_title')
+
+                        # Create the article
+                        article = Article.objects.create(
+                            url=article_data['url'],
+                            title=article_data['title'],
+                            pub_date=article_data.get('pub_date') or timezone.now(),
+                            content=article_data.get('content', ''),
+                            summary=article_data.get('summary', ''),
+                            ai_title=article_data.get('ai_title', ''),
+                            image_url=article_data.get('image_url', ''),
+                            source='apnews'
+                        )
+
+                        messages.success(request, f'Article "{article.ai_title or article.title}" added successfully!')
+                        article_added = True
+                        break
                     else:
-                        messages.success(request, f'Article "{article.title}" updated with new AI summary!')
-                else:
-                    messages.error(request, 'No article found for your search query.')
+                        print(f"Failed to extract data from: {article_url}")
+                        continue
+
+                if not article_added:
+                    messages.warning(request, 'All articles found were already in the database.')
 
             except Exception as e:
                 messages.error(request, f'Error fetching article: {str(e)}')
+                import traceback
+                traceback.print_exc()
 
         else:
             messages.error(request, 'Please enter a valid search query.')
