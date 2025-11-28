@@ -34,12 +34,8 @@ ENV/
 Thumbs.db
 
 # Project specific
-*-extracted.txt
 *.html
-newschomp_backup.py
-testy2.py
-extract_article.py
-google_news_items.json
+newschomp.py
 
 # Claude Code (optional - remove this line if you want to commit Claude config)
 .claude/
