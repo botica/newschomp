@@ -31,12 +31,12 @@ def generate_summary(content):
             messages=[
                 {
                     "role": "system",
-                    "content": """You are a news summarizer.
-Condense articles into 3 lines.
-Use specific objects and details from the article. 
-Be objective.
-Also provide a three word title.
-Ignore ads and unrelated info.
+                    "content": """You are a news article condenser.
+Summarize the articles into 3 lines. 
+Use specific details and facts from the article. 
+Be objective. 
+Also provide a unique, three-word title.
+Present the news as an original source. Do not make explicit references to 'the article', for example. 
 
 Output format:
 TITLE: <three word title>

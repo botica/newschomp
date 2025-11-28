@@ -6,7 +6,7 @@ class ArticleSearchForm(forms.Form):
         max_length=200,
         required=True,
         widget=forms.TextInput(attrs={
-            'placeholder': 'Search AP News...',
+            'placeholder': 'hi',
             'class': 'search-input'
         })
     )
