@@ -70,6 +70,7 @@ def search_article(request):
                             summary=article_data.get('summary', ''),
                             ai_title=article_data.get('ai_title', ''),
                             image_url=article_data.get('image_url', ''),
+                            topics=article_data.get('topics', []),
                             source='apnews'
                         )
 

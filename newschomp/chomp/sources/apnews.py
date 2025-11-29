@@ -84,7 +84,7 @@ class APNewsSource(NewsSource):
             html_string: HTML content as string
 
         Returns:
-            dict: Dictionary containing title, url, pub_date, content, and image_url
+            dict: Dictionary containing title, url, pub_date, content, image_url, and topics
         """
         soup = BeautifulSoup(html_string, 'html.parser')
 
@@ -92,6 +92,17 @@ class APNewsSource(NewsSource):
         title_tag = soup.find('meta', property='og:title')
         url_tag = soup.find('meta', property='og:url')
         pub_date_tag = soup.find('meta', property='article:published_time')
+
+        # Extract topics from article:tag meta tags
+        topics = []
+        topic_tags = soup.find_all('meta', property='article:tag')
+        for tag in topic_tags:
+            topic_content = tag.get('content')
+            if topic_content:
+                topics.append(topic_content)
+
+        # Remove duplicates while preserving order
+        topics = list(dict.fromkeys(topics))
 
         # Extract content div
         content_div = soup.find('div', class_='RichTextStoryBody RichTextBody')
@@ -135,7 +146,8 @@ class APNewsSource(NewsSource):
             'url': url_tag.get('content') if url_tag else None,
             'pub_date': pub_date,
             'content': content_div.get_text(strip=True) if content_div else None,
-            'image_url': image_url
+            'image_url': image_url,
+            'topics': topics
         }
 
         return result
