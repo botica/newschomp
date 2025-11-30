@@ -103,7 +103,11 @@ class BBCSource(NewsSource):
             # Also verify it's a BBC domain (bbc.com or bbc.co.uk)
             is_bbc_domain = 'bbc.com' in article_url or 'bbc.co.uk' in article_url
 
-            if is_article and is_bbc_domain:
+            # Skip sport articles - we're using BBC for world news, not sports
+            # Sport articles also have different HTML structure that breaks content extraction
+            is_sport = '/sport/articles/' in article_url
+
+            if is_article and is_bbc_domain and not is_sport:
                 print(f"Found article URL: {article_url}")
                 article_urls.append(article_url)
             else:
