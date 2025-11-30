@@ -10,3 +10,14 @@ class ArticleSearchForm(forms.Form):
             'class': 'search-input'
         })
     )
+    source = forms.ChoiceField(
+        choices=[
+            ('apnews', 'AP News'),
+            ('bbc', 'BBC News'),
+        ],
+        required=True,
+        initial='apnews',
+        widget=forms.Select(attrs={
+            'class': 'source-select'
+        })
+    )

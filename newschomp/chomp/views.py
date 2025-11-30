@@ -22,10 +22,11 @@ def search_article(request):
         form = ArticleSearchForm(request.POST)
         if form.is_valid():
             query = form.cleaned_data['query']
+            source_name = form.cleaned_data['source']
 
             try:
                 # Get the news source
-                source = get_source('apnews')
+                source = get_source(source_name)
                 if not source:
                     messages.error(request, 'News source not available.')
                     return redirect('home')
@@ -47,11 +48,10 @@ def search_article(request):
 
                     # This is a new article, fetch and extract it
                     print(f"Fetching new article: {article_url}")
-                    response = requests.get(article_url)
-                    response.raise_for_status()
+                    html = source.fetch(article_url)
 
                     # Extract article data
-                    article_data = source.extract(response.text)
+                    article_data = source.extract(html)
 
                     if article_data and article_data.get('title') and article_data.get('url'):
                         # Generate AI summary
@@ -71,7 +71,7 @@ def search_article(request):
                             ai_title=article_data.get('ai_title', ''),
                             image_url=article_data.get('image_url', ''),
                             topics=article_data.get('topics', []),
-                            source='apnews'
+                            source=source_name
                         )
 
                         messages.success(request, f'Article "{article.ai_title or article.title}" added successfully!')

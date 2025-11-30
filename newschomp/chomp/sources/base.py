@@ -51,6 +51,22 @@ class NewsSource(ABC):
         """
         pass
 
+    def fetch(self, url):
+        """
+        Fetch HTML content from a URL.
+        Can be overridden by sources that need special fetching (e.g., Playwright).
+
+        Args:
+            url: URL to fetch
+
+        Returns:
+            str: HTML content as string
+        """
+        import requests
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.text
+
     def search_and_extract(self, query):
         """
         Search for an article and extract its data.

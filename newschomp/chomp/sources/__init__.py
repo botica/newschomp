@@ -1,9 +1,11 @@
 from .base import NewsSource
 from .apnews import APNewsSource
+from .bbc import BBCSource
 
 # Registry of available news sources
 NEWS_SOURCES = {
     'apnews': APNewsSource,
+    'bbc': BBCSource,
 }
 
 def get_source(source_name):
