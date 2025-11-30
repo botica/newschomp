@@ -24,6 +24,16 @@ def generate_summary(content):
             return None
 
         print(f"Generating summary for content ({len(content)} chars)...")
+
+        # Prepare content for LLM (truncate to 4000 chars)
+        llm_content = content[:4000]
+
+        print("=" * 80)
+        print("ARTICLE CONTENT SENT TO LLM:")
+        print("=" * 80)
+        print(llm_content)
+        print("=" * 80)
+
         client = OpenAI(api_key=api_key)
 
         response = client.chat.completions.create(
@@ -32,11 +42,11 @@ def generate_summary(content):
                 {
                     "role": "system",
                     "content": """You are a news article condenser.
-Summarize the articles into 3 lines. 
-Use specific details and facts from the article. 
-Be objective. 
+Summarize the articles into 3 lines.
+Use specific details and facts from the article.
+Be objective.
 Also provide a unique, three-word title.
-Present the news as an original source. Do not make explicit references to 'the article', for example. 
+Present the news as an original source. Do not make explicit references to 'the article', for example.
 
 Output format:
 TITLE: <three word title>
@@ -46,7 +56,7 @@ TITLE: <three word title>
                 },
                 {
                     "role": "user",
-                    "content": f"Summarize this article:\n\n{content[:4000]}"
+                    "content": f"Summarize this article:\n\n{llm_content}"
                 }
             ],
             temperature=0.7,

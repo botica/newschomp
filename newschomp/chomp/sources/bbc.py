@@ -96,7 +96,14 @@ class BBCSource(NewsSource):
                 article_url = f"https://www.bbc.com{article_url}"
 
             # Check if it's an article URL
-            if '/news/articles/' in article_url:
+            # BBC articles follow the pattern: /{category}/articles/{article-id}
+            # Examples: /news/articles/..., /culture/articles/..., /sport/articles/...
+            is_article = '/articles/' in article_url
+
+            # Also verify it's a BBC domain (bbc.com or bbc.co.uk)
+            is_bbc_domain = 'bbc.com' in article_url or 'bbc.co.uk' in article_url
+
+            if is_article and is_bbc_domain:
                 print(f"Found article URL: {article_url}")
                 article_urls.append(article_url)
             else:
