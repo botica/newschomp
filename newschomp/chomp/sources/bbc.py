@@ -169,6 +169,26 @@ class BBCSource(NewsSource):
         content = '\n'.join(content_text) if content_text else None
         print(f"DEBUG: Final content length: {len(content) if content else 0}")
 
+        # Extract image URL
+        # Main photos are inside <figure> tags
+        # Major images use class 'sc-5340b511-0 hLdNfA'
+        image_url = None
+        figure = soup.find('figure')
+        if figure:
+            img_tag = figure.find('img', class_='sc-5340b511-0 hLdNfA')
+            if img_tag:
+                image_url = img_tag.get('src')
+                print(f"DEBUG: Found image URL in figure: {image_url}")
+            else:
+                # Fallback: try any img tag in the figure
+                img_tag = figure.find('img')
+                if img_tag:
+                    image_url = img_tag.get('src')
+                    print(f"DEBUG: Found fallback image URL in figure: {image_url}")
+
+        if not image_url:
+            print("DEBUG: No image URL found")
+
         # Parse publication date
         pub_date = None
         if pub_date_tag:
@@ -189,7 +209,7 @@ class BBCSource(NewsSource):
             'url': url,
             'pub_date': pub_date,
             'content': content,
-            'image_url': None,  # Leaving image URL as None for now
+            'image_url': image_url,
             'topics': []  # Leaving topics as empty list for now
         }
 
