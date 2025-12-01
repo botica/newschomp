@@ -92,6 +92,76 @@ TITLE: <three word title>
         return None
 
 
+def extract_topics_with_llm(content):
+    """
+    Extract topics/categories from article content using OpenAI.
+
+    Args:
+        content: Article content text or HTML
+
+    Returns:
+        list: List of topic strings (3-5 topics), or empty list if extraction fails
+    """
+    if not content:
+        print("No content provided for topic extraction")
+        return []
+
+    try:
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            print("ERROR: OPENAI_API_KEY environment variable not set")
+            return []
+
+        print(f"Extracting topics for content ({len(content)} chars)...")
+
+        # Prepare content for LLM (truncate to 2000 chars - enough for topic detection)
+        llm_content = content[:2000]
+
+        client = OpenAI(api_key=api_key)
+
+        response = client.chat.completions.create(
+            model="gpt-5.1",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are a news article topic classifier.
+Analyze the article and identify 3-5 relevant topics.
+Include both broad categories AND specific subjects mentioned in the article.
+Examples:
+- Broad: Politics, Technology, Climate
+- Specific: Tesla, Ukraine War, Federal Reserve, Artificial Intelligence, COVID-19
+Be specific and identify key people, places, organizations, or events when relevant.
+Keep topics concise - 1-3 words per topic.
+Return only the topics, one per line, no numbering or bullets."""
+                },
+                {
+                    "role": "user",
+                    "content": f"Extract topics from this article:\n\n{llm_content}"
+                }
+            ],
+            temperature=0.3,
+            max_completion_tokens=100
+        )
+
+        result = response.choices[0].message.content.strip()
+        print(f"LLM topic extraction result: {result}")
+
+        # Parse topics from result (one per line)
+        topics = [line.strip() for line in result.split('\n') if line.strip()]
+
+        # Limit to 5 topics maximum
+        topics = topics[:5]
+
+        print(f"Extracted topics: {topics}")
+        return topics
+
+    except Exception as e:
+        print(f"Failed to extract topics: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
+
+
 def search_and_extract_article(query, source_name='apnews'):
     """
     Search a news source for a query and extract the first result's article data.

@@ -96,9 +96,10 @@ class BBCSource(NewsSource):
                 article_url = f"https://www.bbc.com{article_url}"
 
             # Check if it's an article URL
-            # BBC articles follow the pattern: /{category}/articles/{article-id}
-            # Examples: /news/articles/..., /culture/articles/..., /sport/articles/...
-            is_article = '/articles/' in article_url
+            # BBC articles follow the pattern: /{category}/article(s)/{article-id}
+            # Examples: /news/articles/..., /travel/article/..., /culture/articles/...
+            # Note: Some sections use singular /article/ while others use plural /articles/
+            is_article = '/article/' in article_url or '/articles/' in article_url
 
             # Also verify it's a BBC domain (bbc.com or bbc.co.uk)
             is_bbc_domain = 'bbc.com' in article_url or 'bbc.co.uk' in article_url
@@ -207,6 +208,13 @@ class BBCSource(NewsSource):
                 except (ValueError, AttributeError):
                     pub_date = timezone.now()
 
+        # Extract topics using LLM
+        topics = []
+        if content:
+            # Import here to avoid circular import
+            from ..utils import extract_topics_with_llm
+            topics = extract_topics_with_llm(content)
+
         # Build result dictionary
         result = {
             'title': title_tag.get('content') if title_tag else None,
@@ -214,7 +222,7 @@ class BBCSource(NewsSource):
             'pub_date': pub_date,
             'content': content,
             'image_url': image_url,
-            'topics': []  # Leaving topics as empty list for now
+            'topics': topics
         }
 
         print(f"DEBUG: Result - title={result['title']}, url={result['url']}, content_exists={bool(result['content'])}")
