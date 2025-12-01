@@ -3,6 +3,6 @@
 news**CHOMP** is a django app that condenses news for you, there are minimal sources right now as i implement them one a time :)
 
 current sources:  
-*apnews*
+*apnews*  
 *bbc*
  
