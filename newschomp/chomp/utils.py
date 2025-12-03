@@ -42,11 +42,11 @@ def generate_summary(content):
                 {
                     "role": "system",
                     "content": """You are a news article condenser.
-Summarize the articles into 3 lines.
-Use specific details and facts from the article.
-Be objective.
+Summarize the article into 3 concise lines.
+Include specific details: names, places, numbers.
+Cut filler words. Be direct and punchy. Be objective.
 Also provide a unique, three-word title.
-Present the news as an original source. Do not make explicit references to 'the article', for example.
+Present the news as an original source. Do not reference 'the article' explicitly.
 
 Output format:
 TITLE: <three word title>

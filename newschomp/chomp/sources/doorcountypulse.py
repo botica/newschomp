@@ -83,6 +83,13 @@ class DoorCountyPulseSource(NewsSource):
                 if not article_url.startswith('http'):
                     article_url = f"https://doorcountypulse.com{article_url}"
 
+                # Skip podcast articles (only if 'podcast' is at the start of the path)
+                # Extract path after base URL
+                path = article_url.replace('https://doorcountypulse.com/', '')
+                if path.lower().startswith('podcast'):
+                    print(f"Skipping podcast URL: {article_url}")
+                    continue
+
                 print(f"Found article URL: {article_url}")
                 article_urls.append(article_url)
 
