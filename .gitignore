@@ -34,7 +34,6 @@ ENV/
 Thumbs.db
 
 # Project specific
-*.html
 newschomp.py
 
 # Claude Code (optional - remove this line if you want to commit Claude config)

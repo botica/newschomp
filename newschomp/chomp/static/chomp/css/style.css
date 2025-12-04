@@ -158,3 +158,68 @@ a:hover {
     border-radius: 4px;
     margin: 10px 0;
 }
+
+/* Header styles */
+header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-logo {
+    width: 100px;
+    height: auto;
+}
+
+/* Alternative sources section */
+.alt-sources {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.alt-sources-text {
+    margin-bottom: 10px;
+}
+
+.alt-source-form {
+    margin-bottom: 10px;
+}
+
+/* Source-specific button colors */
+.button-doorcountypulse {
+    background-color: #2c7a7b;
+}
+
+.button-doorcountypulse:hover {
+    background-color: #236365;
+}
+
+.button-urbanmilwaukee {
+    background-color: #7c3aed;
+}
+
+.button-urbanmilwaukee:hover {
+    background-color: #6d28d9;
+}
+
+/* Article topics */
+.article-topics {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.topic-tag {
+    display: inline-block;
+    background: #3d3d3d;
+    color: #7bb8ff;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-right: 5px;
+    font-size: 13px;
+}
+
+/* No summary message */
+.no-summary {
+    color: #999;
+    font-style: italic;
+}

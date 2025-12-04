@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>chomp ya in the mouth</title>
+    <link rel="stylesheet" href="{% static 'chomp/css/style.css' %}">
+</head>
+<body>
+    <header>
+        <img src="{% static 'chomp/images/mouth.png' %}" alt="Newschomp logo" class="header-logo">
+        <h1>newschomp - condensed news</h1>
+    </header>
+
+    <div class="search-container">
+        <h2>search to make shomp</h2>
+        <form method="post" action="{% url 'search_article' %}" class="search-form">
+            {% csrf_token %}
+            {{ form.source }}
+            {{ form.query }}
+            <button type="submit" class="search-button">Search</button>
+        </form>
+
+        <div class="alt-sources">
+            <p class="alt-sources-text">or</p>
+            <form method="post" action="{% url 'fetch_doorcountypulse' %}" class="alt-source-form">
+                {% csrf_token %}
+                <button type="submit" class="search-button button-doorcountypulse">Get Door County Pulse Article</button>
+            </form>
+            <form method="post" action="{% url 'fetch_urbanmilwaukee' %}">
+                {% csrf_token %}
+                <button type="submit" class="search-button button-urbanmilwaukee">Get Urban Milwaukee Article</button>
+            </form>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h1>shompe's:</h1>
+
+    {% if articles %}
+        <ul>
+            {% for article in articles %}
+                <li>
+                    <h2 class="article-title">
+                        <a href="{{ article.url }}" target="_blank">
+                            {% if article.ai_title %}
+                                {{ article.ai_title }}
+                            {% else %}
+                                {{ article.title }}
+                            {% endif %}
+                        </a>
+                    </h2>
+                    {% if article.image_url %}
+                        <img src="{{ article.image_url }}" alt="{{ article.title }}" class="article-image">
+                    {% endif %}
+                    {% if article.summary %}
+                        <ul class="summary">
+                            {% for line in article.summary.splitlines %}
+                                {% if line.strip %}
+                                    <li>{{ line }}</li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="no-summary">No summary available</p>
+                    {% endif %}
+                    <div class="article-meta">
+                        <small>{{ article.source|upper }} | {{ article.pub_date|date:"F d, Y g:i A" }}</small>
+                    </div>
+                    {% if article.topics %}
+                        <div class="article-topics">
+                            <strong>Topics:</strong>
+                            {% for topic in article.topics %}
+                                <span class="topic-tag">{{ topic }}</span>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>hi there duder</p>
+    {% endif %}
+</body>
+</html>
