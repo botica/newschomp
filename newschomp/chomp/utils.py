@@ -45,7 +45,7 @@ def generate_summary(content):
 Summarize the article into 3 concise lines.
 Include specific details: names, places, numbers.
 Cut filler words. Be direct and punchy. Be objective.
-Also provide a unique, three-word title.
+Also provide a unique, four word title.
 Present the news as an original source. Do not reference 'the article' explicitly.
 
 Output format:
