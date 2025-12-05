@@ -45,11 +45,11 @@ def generate_summary(content):
 Summarize the article into 3 concise lines.
 Include specific details: names, places, numbers.
 Cut filler words. Be direct and punchy. Be objective.
-Also provide a unique, four word title.
+Also provide a unique, 4 word title.
 Present the news as an original source. Do not reference 'the article' explicitly.
 
 Output format:
-TITLE: <three word title>
+TITLE: <4 word title>
 <summary line 1>
 <summary line 2>
 <summary line 3>"""
@@ -148,9 +148,6 @@ Return only the topics, one per line, no numbering or bullets."""
 
         # Parse topics from result (one per line)
         topics = [line.strip() for line in result.split('\n') if line.strip()]
-
-        # Limit to 5 topics maximum
-        topics = topics[:5]
 
         print(f"Extracted topics: {topics}")
         return topics

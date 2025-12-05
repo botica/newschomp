@@ -49,8 +49,13 @@ class UrbanMilwaukeeSource(NewsSource):
             # Parse the page
             soup = BeautifulSoup(response.text, 'html.parser')
 
-            # Find all article divs with class "sixteen wide-story-block columns"
-            article_divs = soup.find_all('div', class_='sixteen wide-story-block columns')
+            # Different category pages use different class names
+            # Try "homepage-post" first (used by arts-entertainment)
+            article_divs = soup.find_all('div', class_='homepage-post')
+
+            # If not found, try "wide-story-block" (used by food-drink)
+            if not article_divs:
+                article_divs = soup.find_all('div', class_='wide-story-block')
 
             if not article_divs:
                 print("No article divs found on category page")
@@ -60,29 +65,20 @@ class UrbanMilwaukeeSource(NewsSource):
 
             # Extract article URLs
             article_urls = []
+            import re
             for article_div in article_divs:
-                # Article link is nested two tags down
-                # Navigate down two levels to find the <a> tag
-                # First level: get all children
-                children = list(article_div.children)
+                # Find any <a> tag with a date pattern in the URL (YYYY/MM/DD)
+                link = article_div.find('a', href=lambda x: x and re.search(r'/\d{4}/\d{2}/\d{2}/', x))
 
-                for child in children:
-                    if hasattr(child, 'children'):
-                        # Second level: get children of children
-                        grandchildren = list(child.children)
-                        for grandchild in grandchildren:
-                            if grandchild.name == 'a':
-                                article_url = grandchild.get('href')
-                                if article_url:
-                                    # Ensure it's a full URL
-                                    if not article_url.startswith('http'):
-                                        article_url = f"https://urbanmilwaukee.com{article_url}"
+                if link:
+                    article_url = link.get('href')
+                    if article_url:
+                        # Ensure it's a full URL
+                        if not article_url.startswith('http'):
+                            article_url = f"https://urbanmilwaukee.com{article_url}"
 
-                                    print(f"Found article URL: {article_url}")
-                                    article_urls.append(article_url)
-                                    break
-                        if article_urls and article_urls[-1]:  # If we found a URL in this div, move to next div
-                            break
+                        print(f"Found article URL: {article_url}")
+                        article_urls.append(article_url)
 
             if not article_urls:
                 print("No article URLs extracted from category page")
@@ -148,6 +144,13 @@ class UrbanMilwaukeeSource(NewsSource):
                     content_text.append(para_text)
 
         content = '\n'.join(content_text) if content_text else None
+
+        # Detect paywall - check if content indicates paid membership required
+        if content and ('available only to Urban Milwaukee' in content or
+                       'Membership is available for $9' in content or
+                       'paid members' in content.lower()):
+            print(f"PAYWALL DETECTED: Article requires paid membership, skipping")
+            return None
 
         # Extract main image from div class="wp-caption"
         image_url = None
