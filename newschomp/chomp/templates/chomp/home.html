@@ -30,6 +30,10 @@
                 {% csrf_token %}
                 <button type="submit" class="search-button button-urbanmilwaukee">Get Urban Milwaukee Article</button>
             </form>
+            <form method="post" action="{% url 'fetch_lataco' %}">
+                {% csrf_token %}
+                <button type="submit" class="search-button button-lataco">Get L.A. TACO Article</button>
+            </form>
         </div>
     </div>
 

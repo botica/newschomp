@@ -3,6 +3,7 @@ from .apnews import APNewsSource
 from .bbc import BBCSource
 from .doorcountypulse import DoorCountyPulseSource
 from .urbanmilwaukee import UrbanMilwaukeeSource
+from .lataco import LATacoSource
 
 # Registry of available news sources
 NEWS_SOURCES = {
@@ -10,6 +11,7 @@ NEWS_SOURCES = {
     'bbc': BBCSource,
     'doorcountypulse': DoorCountyPulseSource,
     'urbanmilwaukee': UrbanMilwaukeeSource,
+    'lataco': LATacoSource,
 }
 
 def get_source(source_name):
