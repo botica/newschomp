@@ -5,7 +5,6 @@ from datetime import datetime
 from django.utils import timezone
 from .base import NewsSource
 
-
 class LATacoSource(NewsSource):
     """L.A. TACO article source implementation"""
 
@@ -45,7 +44,7 @@ class LATacoSource(NewsSource):
                 try:
                     page.wait_for_selector('article, .entry-content, [class*="content"]', timeout=10000)
                 except:
-                    print("Warning: No article content selector found, continuing anyway")
+                    print('NO')
 
                 html = page.content()
                 browser.close()
@@ -89,7 +88,7 @@ class LATacoSource(NewsSource):
                     page.wait_for_selector('a[href*="lataco.com"]', timeout=10000)
                 except:
                     # If no links found, continue anyway
-                    print("Warning: No links found, continuing with page as-is")
+                    print("No links found, continuing with page as-is")
 
                 # Get the rendered HTML
                 html = page.content()
@@ -100,10 +99,10 @@ class LATacoSource(NewsSource):
 
                 # Find all links
                 all_links = soup.find_all('a', href=True)
-                print(f"DEBUG: Found {len(all_links)} total links on page")
+                print(f"Found {len(all_links)} total links on page")
 
                 # Debug: Show first 10 links
-                print("DEBUG: First 10 links found:")
+                print("First 10 links found:")
                 for i, link in enumerate(all_links[:10]):
                     href = link.get('href', '')
                     text = link.get_text(strip=True)[:50]
@@ -170,8 +169,6 @@ class LATacoSource(NewsSource):
 
         except Exception as e:
             print(f"Error fetching category page: {type(e).__name__}: {e}")
-            import traceback
-            traceback.print_exc()
             return []
 
     def extract(self, html_string):
@@ -219,24 +216,24 @@ class LATacoSource(NewsSource):
         # Look for common WordPress article content selectors
         content_area = soup.find('article') or soup.find('div', class_=re.compile('entry-content|article-content|post-content'))
 
-        print(f"DEBUG: Found content_area: {bool(content_area)}")
+        print(f"Found content_area: {bool(content_area)}")
 
         if content_area:
             # Find all <p> tags within the content area
             paragraphs = content_area.find_all('p')
-            print(f"DEBUG: Found {len(paragraphs)} paragraphs in content area")
+            print(f"Found {len(paragraphs)} paragraphs in content area")
 
             for para in paragraphs:
                 para_text = para.get_text(separator=' ', strip=True)
                 # Skip very short paragraphs (likely navigation or metadata)
                 if para_text and len(para_text) > 20:
                     content_text.append(para_text)
-                    print(f"DEBUG: Added paragraph: {para_text[:80]}...")
+                    print(f"Added paragraph: {para_text[:80]}...")
         else:
-            print("DEBUG: No content area found, trying to find all <p> tags on page")
+            print("No content area found, trying to find all <p> tags on page")
             # Fallback: try to find any paragraphs on the page
             all_paragraphs = soup.find_all('p')
-            print(f"DEBUG: Found {len(all_paragraphs)} total paragraphs on page")
+            print(f"Found {len(all_paragraphs)} total paragraphs on page")
 
             for para in all_paragraphs:
                 para_text = para.get_text(separator=' ', strip=True)
@@ -244,17 +241,17 @@ class LATacoSource(NewsSource):
                 if para_text and len(para_text) > 20:
                     content_text.append(para_text)
                     if len(content_text) <= 5:  # Show first 5
-                        print(f"DEBUG: Added paragraph: {para_text[:80]}...")
+                        print(f"Added paragraph: {para_text[:80]}...")
 
         content = '\n'.join(content_text) if content_text else None
-        print(f"DEBUG: Final content length: {len(content) if content else 0}")
+        print(f"Final content length: {len(content) if content else 0}")
 
         # Extract main image from og:image
         image_url = None
         og_image_tag = soup.find('meta', property='og:image')
         if og_image_tag:
             image_url = og_image_tag.get('content')
-            print(f"DEBUG: Found image URL: {image_url}")
+            print(f"Found image URL: {image_url}")
 
         # Extract topics using LLM
         topics = []
@@ -272,7 +269,7 @@ class LATacoSource(NewsSource):
             'topics': topics
         }
 
-        print(f"DEBUG: Extracted - title={result['title']}, url={result['url']}, "
+        print(f"Extracted - title={result['title']}, url={result['url']}, "
               f"content_length={len(content) if content else 0}, image_url={bool(image_url)}")
 
         return result
