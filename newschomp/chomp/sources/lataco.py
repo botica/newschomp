@@ -11,7 +11,6 @@ class LATacoSource(NewsSource):
     # Category pages to scrape
     CATEGORY_PAGES = [
         'https://lataco.com/category/food',
-        'https://lataco.com/category/news',
     ]
 
     @property
