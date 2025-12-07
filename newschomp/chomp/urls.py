@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import home, search_article, fetch_doorcountypulse, fetch_urbanmilwaukee, fetch_lataco
+from .views import home, search_article, fetch_doorcountypulse, fetch_urbanmilwaukee, fetch_lataco, fetch_stlmag
 
 urlpatterns = [
     path("", home, name="home"),
@@ -7,4 +7,5 @@ urlpatterns = [
     path("fetch-doorcountypulse/", fetch_doorcountypulse, name="fetch_doorcountypulse"),
     path("fetch-urbanmilwaukee/", fetch_urbanmilwaukee, name="fetch_urbanmilwaukee"),
     path("fetch-lataco/", fetch_lataco, name="fetch_lataco"),
+    path("fetch-stlmag/", fetch_stlmag, name="fetch_stlmag"),
 ]
