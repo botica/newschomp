@@ -211,7 +211,6 @@ class BBCSource(NewsSource):
         # Extract topics using LLM
         topics = []
         if content:
-            # Import here to avoid circular import
             from ..utils import extract_topics_with_llm
             topics = extract_topics_with_llm(content)
 

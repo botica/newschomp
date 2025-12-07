@@ -1,6 +1,5 @@
 import os
 from openai import OpenAI
-from .sources import get_source
 
 
 def generate_summary(content):
@@ -158,38 +157,3 @@ Return only the topics, one per line, no numbering or bullets."""
         traceback.print_exc()
         return []
 
-
-def search_and_extract_article(query, source_name='apnews'):
-    """
-    Search a news source for a query and extract the first result's article data.
-
-    Args:
-        query: Search query string
-        source_name: Name of the news source to use (default: 'apnews')
-
-    Returns:
-        dict: Extracted article data with 'source' key, or None if search/extraction fails
-    """
-    # Get the news source instance
-    source = get_source(source_name)
-    if not source:
-        print(f"Unknown news source: {source_name}")
-        return None
-
-    # Use the source to search and extract
-    extracted_data = source.search_and_extract(query)
-
-    if not extracted_data:
-        return None
-
-    # Add source information to the data
-    extracted_data['source'] = source.source_key
-
-    # Generate summary and title if content exists
-    if extracted_data.get('content'):
-        ai_data = generate_summary(extracted_data['content'])
-        if ai_data:
-            extracted_data['summary'] = ai_data.get('summary')
-            extracted_data['ai_title'] = ai_data.get('ai_title')
-
-    return extracted_data

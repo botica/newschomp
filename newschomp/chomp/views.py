@@ -95,445 +95,77 @@ def search_article(request):
     return redirect('home')
 
 
-def fetch_doorcountypulse(request):
+def fetch_article_from_source(request, source_name):
     """
-    Fetch a random article from Door County Pulse.
-    This source doesn't use search queries - it picks from category pages.
+    Generic handler for fetching articles from any news source.
+    Supports both search-based sources (AP News, BBC) and category/RSS-based sources.
     """
-    if request.method == 'POST':
-        try:
-            # Get the Door County Pulse source
-            source = get_source('doorcountypulse')
-            if not source:
-                messages.error(request, 'Door County Pulse source not available.')
-                return redirect('home')
-
-            # Get article URLs from a random category (no query needed)
-            article_urls = source.search()
-
-            if not article_urls:
-                messages.error(request, 'No articles found on Door County Pulse.')
-                return redirect('home')
-
-            # Iterate through URLs and find first non-duplicate
-            article_added = False
-            for article_url in article_urls:
-                # Check if this URL already exists in database
-                if Article.objects.filter(url=article_url).exists():
-                    print(f"Skipping duplicate article: {article_url}")
-                    continue
-
-                # This is a new article, fetch and extract it
-                print(f"Fetching new article: {article_url}")
-                html = source.fetch(article_url)
-
-                # Extract article data
-                article_data = source.extract(html)
-
-                if article_data and article_data.get('title') and article_data.get('url'):
-                    # Generate AI summary
-                    if article_data.get('content'):
-                        ai_data = generate_summary(article_data['content'])
-                        if ai_data:
-                            article_data['summary'] = ai_data.get('summary')
-                            article_data['ai_title'] = ai_data.get('ai_title')
-
-                    # Create the article
-                    article = Article.objects.create(
-                        url=article_data['url'],
-                        title=article_data['title'],
-                        pub_date=article_data.get('pub_date') or timezone.now(),
-                        content=article_data.get('content', ''),
-                        summary=article_data.get('summary', ''),
-                        ai_title=article_data.get('ai_title', ''),
-                        image_url=article_data.get('image_url', ''),
-                        topics=article_data.get('topics', []),
-                        source='doorcountypulse'
-                    )
-
-                    messages.success(request, f'Article "{article.ai_title or article.title}" added successfully!')
-                    article_added = True
-                    break
-                else:
-                    print(f"Failed to extract data from: {article_url}")
-                    continue
-
-            if not article_added:
-                messages.warning(request, 'All articles found were already in the database.')
-
-        except Exception as e:
-            messages.error(request, f'Error fetching Door County Pulse article: {str(e)}')
-            import traceback
-            traceback.print_exc()
-
-    return redirect('home')
-
-
-def fetch_urbanmilwaukee(request):
-    """
-    Fetch a random article from Urban Milwaukee.
-    This source doesn't use search queries - it picks from category pages.
-    """
-    if request.method == 'POST':
-        try:
-            # Get the Urban Milwaukee source
-            source = get_source('urbanmilwaukee')
-            if not source:
-                messages.error(request, 'Urban Milwaukee source not available.')
-                return redirect('home')
-
-            # Get article URLs from a random category (no query needed)
-            article_urls = source.search()
-
-            if not article_urls:
-                messages.error(request, 'No articles found on Urban Milwaukee.')
-                return redirect('home')
-
-            # Iterate through URLs and find first non-duplicate
-            article_added = False
-            for article_url in article_urls:
-                # Check if this URL already exists in database
-                if Article.objects.filter(url=article_url).exists():
-                    print(f"Skipping duplicate article: {article_url}")
-                    continue
-
-                # This is a new article, fetch and extract it
-                print(f"Fetching new article: {article_url}")
-                html = source.fetch(article_url)
-
-                # Extract article data
-                article_data = source.extract(html)
-
-                if article_data and article_data.get('title') and article_data.get('url'):
-                    # Generate AI summary
-                    if article_data.get('content'):
-                        ai_data = generate_summary(article_data['content'])
-                        if ai_data:
-                            article_data['summary'] = ai_data.get('summary')
-                            article_data['ai_title'] = ai_data.get('ai_title')
-
-                    # Create the article
-                    article = Article.objects.create(
-                        url=article_data['url'],
-                        title=article_data['title'],
-                        pub_date=article_data.get('pub_date') or timezone.now(),
-                        content=article_data.get('content', ''),
-                        summary=article_data.get('summary', ''),
-                        ai_title=article_data.get('ai_title', ''),
-                        image_url=article_data.get('image_url', ''),
-                        topics=article_data.get('topics', []),
-                        source='urbanmilwaukee'
-                    )
-
-                    messages.success(request, f'Article "{article.ai_title or article.title}" added successfully!')
-                    article_added = True
-                    break
-                else:
-                    print(f"Failed to extract data from: {article_url}")
-                    continue
-
-            if not article_added:
-                messages.warning(request, 'All articles found were already in the database.')
-
-        except Exception as e:
-            messages.error(request, f'Error fetching Urban Milwaukee article: {str(e)}')
-            import traceback
-            traceback.print_exc()
-
-    return redirect('home')
-
-
-def fetch_lataco(request):
-    """
-    Fetch a random article from L.A. TACO.
-    This source doesn't use search queries - it picks from category pages.
-    """
-    if request.method == 'POST':
-        try:
-            # Get the L.A. TACO source
-            source = get_source('lataco')
-            if not source:
-                messages.error(request, 'L.A. TACO source not available.')
-                return redirect('home')
-
-            # Get article URLs from a random category (no query needed)
-            article_urls = source.search()
-
-            if not article_urls:
-                messages.error(request, 'No articles found on L.A. TACO.')
-                return redirect('home')
-
-            # Iterate through URLs and find first non-duplicate
-            article_added = False
-            for article_url in article_urls:
-                # Check if this URL already exists in database
-                if Article.objects.filter(url=article_url).exists():
-                    print(f"Skipping duplicate article: {article_url}")
-                    continue
-
-                # This is a new article, fetch and extract it
-                print(f"Fetching new article: {article_url}")
-                html = source.fetch(article_url)
-
-                # Extract article data
-                article_data = source.extract(html)
-
-                if article_data and article_data.get('title') and article_data.get('url'):
-                    # Generate AI summary
-                    if article_data.get('content'):
-                        ai_data = generate_summary(article_data['content'])
-                        if ai_data:
-                            article_data['summary'] = ai_data.get('summary')
-                            article_data['ai_title'] = ai_data.get('ai_title')
-
-                    # Create the article
-                    article = Article.objects.create(
-                        url=article_data['url'],
-                        title=article_data['title'],
-                        pub_date=article_data.get('pub_date') or timezone.now(),
-                        content=article_data.get('content', ''),
-                        summary=article_data.get('summary', ''),
-                        ai_title=article_data.get('ai_title', ''),
-                        image_url=article_data.get('image_url', ''),
-                        topics=article_data.get('topics', []),
-                        source='lataco'
-                    )
-
-                    messages.success(request, f'Article "{article.ai_title or article.title}" added successfully!')
-                    article_added = True
-                    break
-                else:
-                    print(f"Failed to extract data from: {article_url}")
-                    continue
-
-            if not article_added:
-                messages.warning(request, 'All articles found were already in the database.')
-
-        except Exception as e:
-            messages.error(request, f'Error fetching L.A. TACO article: {str(e)}')
-            import traceback
-            traceback.print_exc()
-
-    return redirect('home')
-
-
-def fetch_stlmag(request):
-    """
-    Fetch a random article from STL Magazine.
-    This source doesn't use search queries - it picks from category pages.
-    """
-    if request.method == 'POST':
-        try:
-            # Get the STL Magazine source
-            source = get_source('stlmag')
-            if not source:
-                messages.error(request, 'STL Magazine source not available.')
-                return redirect('home')
-
-            # Get article URLs from a random category (no query needed)
-            article_urls = source.search()
-
-            if not article_urls:
-                messages.error(request, 'No articles found on STL Magazine.')
-                return redirect('home')
-
-            # Iterate through URLs and find first non-duplicate
-            article_added = False
-            for article_url in article_urls:
-                # Check if this URL already exists in database
-                if Article.objects.filter(url=article_url).exists():
-                    print(f"Skipping duplicate article: {article_url}")
-                    continue
-
-                # This is a new article, fetch and extract it
-                print(f"Fetching new article: {article_url}")
-                html = source.fetch(article_url)
-
-                # Extract article data
-                article_data = source.extract(html)
-
-                if article_data and article_data.get('title') and article_data.get('url'):
-                    # Generate AI summary
-                    if article_data.get('content'):
-                        ai_data = generate_summary(article_data['content'])
-                        if ai_data:
-                            article_data['summary'] = ai_data.get('summary')
-                            article_data['ai_title'] = ai_data.get('ai_title')
-
-                    # Create the article
-                    article = Article.objects.create(
-                        url=article_data['url'],
-                        title=article_data['title'],
-                        pub_date=article_data.get('pub_date') or timezone.now(),
-                        content=article_data.get('content', ''),
-                        summary=article_data.get('summary', ''),
-                        ai_title=article_data.get('ai_title', ''),
-                        image_url=article_data.get('image_url', ''),
-                        topics=article_data.get('topics', []),
-                        source='stlmag'
-                    )
-
-                    messages.success(request, f'Article "{article.ai_title or article.title}" added successfully!')
-                    article_added = True
-                    break
-                else:
-                    print(f"Failed to extract data from: {article_url}")
-                    continue
-
-            if not article_added:
-                messages.warning(request, 'All articles found were already in the database.')
-
-        except Exception as e:
-            messages.error(request, f'Error fetching STL Magazine article: {str(e)}')
-            import traceback
-            traceback.print_exc()
-
-    return redirect('home')
-
-
-def fetch_blockclubchicago(request):
-    """
-    Fetch a random article from Block Club Chicago.
-    This source doesn't use search queries - it picks from category pages.
-    """
-    if request.method == 'POST':
-        try:
-            # Get the Block Club Chicago source
-            source = get_source('blockclubchicago')
-            if not source:
-                messages.error(request, 'Block Club Chicago source not available.')
-                return redirect('home')
-
-            # Get article URLs from a random category (no query needed)
-            article_urls = source.search()
-
-            if not article_urls:
-                messages.error(request, 'No articles found on Block Club Chicago.')
-                return redirect('home')
-
-            # Iterate through URLs and find first non-duplicate
-            article_added = False
-            for article_url in article_urls:
-                # Check if this URL already exists in database
-                if Article.objects.filter(url=article_url).exists():
-                    print(f"Skipping duplicate article: {article_url}")
-                    continue
-
-                # This is a new article, fetch and extract it
-                print(f"Fetching new article: {article_url}")
-                html = source.fetch(article_url)
-
-                # Extract article data
-                article_data = source.extract(html)
-
-                if article_data and article_data.get('title') and article_data.get('url'):
-                    # Generate AI summary
-                    if article_data.get('content'):
-                        ai_data = generate_summary(article_data['content'])
-                        if ai_data:
-                            article_data['summary'] = ai_data.get('summary')
-                            article_data['ai_title'] = ai_data.get('ai_title')
-
-                    # Create the article
-                    article = Article.objects.create(
-                        url=article_data['url'],
-                        title=article_data['title'],
-                        pub_date=article_data.get('pub_date') or timezone.now(),
-                        content=article_data.get('content', ''),
-                        summary=article_data.get('summary', ''),
-                        ai_title=article_data.get('ai_title', ''),
-                        image_url=article_data.get('image_url', ''),
-                        topics=article_data.get('topics', []),
-                        source='blockclubchicago'
-                    )
-
-                    messages.success(request, f'Article "{article.ai_title or article.title}" added successfully!')
-                    article_added = True
-                    break
-                else:
-                    print(f"Failed to extract data from: {article_url}")
-                    continue
-
-            if not article_added:
-                messages.warning(request, 'All articles found were already in the database.')
-
-        except Exception as e:
-            messages.error(request, f'Error fetching Block Club Chicago article: {str(e)}')
-            import traceback
-            traceback.print_exc()
-
-    return redirect('home')
-
-
-def fetch_gothamist(request):
-    """
-    Fetch a random article from The Gothamist.
-    This source uses RSS feed - it picks from the latest feed items.
-    """
-    if request.method == 'POST':
-        try:
-            # Get the Gothamist source
-            source = get_source('gothamist')
-            if not source:
-                messages.error(request, 'The Gothamist source not available.')
-                return redirect('home')
-
-            # Get article URLs from RSS feed (no query needed)
-            article_urls = source.search()
-
-            if not article_urls:
-                messages.error(request, 'No articles found on The Gothamist RSS feed.')
-                return redirect('home')
-
-            # Iterate through URLs and find first non-duplicate
-            article_added = False
-            for article_url in article_urls:
-                # Check if this URL already exists in database
-                if Article.objects.filter(url=article_url).exists():
-                    print(f"Skipping duplicate article: {article_url}")
-                    continue
-
-                # This is a new article, fetch and extract it
-                print(f"Fetching new article: {article_url}")
-                html = source.fetch(article_url)
-
-                # Extract article data
-                article_data = source.extract(html)
-
-                if article_data and article_data.get('title') and article_data.get('url'):
-                    # Generate AI summary
-                    if article_data.get('content'):
-                        ai_data = generate_summary(article_data['content'])
-                        if ai_data:
-                            article_data['summary'] = ai_data.get('summary')
-                            article_data['ai_title'] = ai_data.get('ai_title')
-
-                    # Create the article
-                    article = Article.objects.create(
-                        url=article_data['url'],
-                        title=article_data['title'],
-                        pub_date=article_data.get('pub_date') or timezone.now(),
-                        content=article_data.get('content', ''),
-                        summary=article_data.get('summary', ''),
-                        ai_title=article_data.get('ai_title', ''),
-                        image_url=article_data.get('image_url', ''),
-                        topics=article_data.get('topics', []),
-                        source='gothamist'
-                    )
-
-                    messages.success(request, f'Article "{article.ai_title or article.title}" added successfully!')
-                    article_added = True
-                    break
-                else:
-                    print(f"Failed to extract data from: {article_url}")
-                    continue
-
-            if not article_added:
-                messages.warning(request, 'All articles found were already in the database.')
-
-        except Exception as e:
-            messages.error(request, f'Error fetching Gothamist article: {str(e)}')
-            import traceback
-            traceback.print_exc()
+    if request.method != 'POST':
+        return redirect('home')
+
+    try:
+        # Get the news source
+        source = get_source(source_name)
+        if not source:
+            messages.error(request, f'Source "{source_name}" not available.')
+            return redirect('home')
+
+        # Get article URLs from source (either via search or category/RSS)
+        article_urls = source.search()
+
+        if not article_urls:
+            messages.error(request, f'No articles found from {source.name}.')
+            return redirect('home')
+
+        # Iterate through URLs and find first non-duplicate
+        article_added = False
+        for article_url in article_urls:
+            # Check if this URL already exists in database
+            if Article.objects.filter(url=article_url).exists():
+                print(f"Skipping duplicate article: {article_url}")
+                continue
+
+            # This is a new article, fetch and extract it
+            print(f"Fetching new article: {article_url}")
+            html = source.fetch(article_url)
+
+            # Extract article data
+            article_data = source.extract(html)
+
+            if article_data and article_data.get('title') and article_data.get('url'):
+                # Generate AI summary if content is available
+                if article_data.get('content'):
+                    ai_data = generate_summary(article_data['content'])
+                    if ai_data:
+                        article_data['summary'] = ai_data.get('summary')
+                        article_data['ai_title'] = ai_data.get('ai_title')
+
+                # Create the article
+                article = Article.objects.create(
+                    url=article_data['url'],
+                    title=article_data['title'],
+                    pub_date=article_data.get('pub_date') or timezone.now(),
+                    content=article_data.get('content', ''),
+                    summary=article_data.get('summary', ''),
+                    ai_title=article_data.get('ai_title', ''),
+                    image_url=article_data.get('image_url', ''),
+                    topics=article_data.get('topics', []),
+                    source=source_name
+                )
+
+                messages.success(request, f'Article "{article.ai_title or article.title}" added successfully!')
+                article_added = True
+                break
+            else:
+                print(f"Failed to extract data from: {article_url}")
+                continue
+
+        if not article_added:
+            messages.warning(request, 'All articles found were already in the database.')
+
+    except Exception as e:
+        messages.error(request, f'Error fetching article from {source_name}: {str(e)}')
+        import traceback
+        traceback.print_exc()
 
     return redirect('home')

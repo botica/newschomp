@@ -22,27 +22,27 @@
 
         <div class="alt-sources">
             <p class="alt-sources-text">or</p>
-            <form method="post" action="{% url 'fetch_doorcountypulse' %}" class="alt-source-form">
+            <form method="post" action="{% url 'fetch_article' 'doorcountypulse' %}" class="alt-source-form">
                 {% csrf_token %}
                 <button type="submit" class="search-button button-doorcountypulse">Get Door County Pulse Article</button>
             </form>
-            <form method="post" action="{% url 'fetch_urbanmilwaukee' %}">
+            <form method="post" action="{% url 'fetch_article' 'urbanmilwaukee' %}">
                 {% csrf_token %}
                 <button type="submit" class="search-button button-urbanmilwaukee">Get Urban Milwaukee Article</button>
             </form>
-            <form method="post" action="{% url 'fetch_lataco' %}">
+            <form method="post" action="{% url 'fetch_article' 'lataco' %}">
                 {% csrf_token %}
                 <button type="submit" class="search-button button-lataco">Get L.A. TACO Article</button>
             </form>
-            <form method="post" action="{% url 'fetch_stlmag' %}">
+            <form method="post" action="{% url 'fetch_article' 'stlmag' %}">
                 {% csrf_token %}
                 <button type="submit" class="search-button button-stlmag">Get STL Magazine Article</button>
             </form>
-            <form method="post" action="{% url 'fetch_blockclubchicago' %}">
+            <form method="post" action="{% url 'fetch_article' 'blockclubchicago' %}">
                 {% csrf_token %}
                 <button type="submit" class="search-button button-blockclubchicago">Get Block Club Chicago Article</button>
             </form>
-            <form method="post" action="{% url 'fetch_gothamist' %}">
+            <form method="post" action="{% url 'fetch_article' 'gothamist' %}">
                 {% csrf_token %}
                 <button type="submit" class="search-button button-gothamist">Get Gothamist Article</button>
             </form>
