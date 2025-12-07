@@ -8,3 +8,5 @@ current sources:
 *door county pulse*  
 *urban milwaukee*  
 *la taco*  
+*st. louis magazine*  
+*block club chicago*  
