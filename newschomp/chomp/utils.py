@@ -64,7 +64,7 @@ TITLE: <4 word title>
         )
 
         result = response.choices[0].message.content.strip()
-        print(f"Successfully generated: {result[:100]}...")
+        print(f"LLM raw response: '{result}'")
 
         # Parse the result
         lines = result.split('\n')

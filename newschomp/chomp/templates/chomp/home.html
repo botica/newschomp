@@ -42,6 +42,10 @@
                 {% csrf_token %}
                 <button type="submit" class="search-button button-blockclubchicago">Get Block Club Chicago Article</button>
             </form>
+            <form method="post" action="{% url 'fetch_gothamist' %}">
+                {% csrf_token %}
+                <button type="submit" class="search-button button-gothamist">Get Gothamist Article</button>
+            </form>
         </div>
     </div>
 
