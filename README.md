@@ -11,3 +11,4 @@ current sources:
 *st. louis magazine*  
 *block club chicago*  
 *the gothamist*  
+*miami living*  
