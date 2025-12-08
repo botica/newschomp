@@ -7,6 +7,7 @@ from .lataco import LATacoSource
 from .stlmag import STLMagSource
 from .blockclubchicago import BlockClubChicagoSource
 from .gothamist import GothamistSource
+from .miamiliving import MiamiLivingSource
 
 # Registry of available news sources
 NEWS_SOURCES = {
@@ -18,6 +19,7 @@ NEWS_SOURCES = {
     'stlmag': STLMagSource,
     'blockclubchicago': BlockClubChicagoSource,
     'gothamist': GothamistSource,
+    'miamiliving': MiamiLivingSource,
 }
 
 def get_source(source_name):

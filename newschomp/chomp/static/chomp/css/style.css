@@ -223,3 +223,11 @@ header {
     color: #999;
     font-style: italic;
 }
+
+.button-miamiliving {
+    background-color: #ff6b6b;
+}
+
+.button-miamiliving:hover {
+    background-color: #ee5a5a;
+}
