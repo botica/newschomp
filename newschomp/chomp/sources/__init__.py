@@ -1,5 +1,6 @@
 from .base import NewsSource
 from .apnews import APNewsSource
+from .austinchronicle import AustinChronicleSource
 from .bbc import BBCSource
 from .doorcountypulse import DoorCountyPulseSource
 from .urbanmilwaukee import UrbanMilwaukeeSource
@@ -12,6 +13,7 @@ from .miamiliving import MiamiLivingSource
 # Registry of available news sources
 NEWS_SOURCES = {
     'apnews': APNewsSource,
+    'austinchronicle': AustinChronicleSource,
     'bbc': BBCSource,
     'doorcountypulse': DoorCountyPulseSource,
     'urbanmilwaukee': UrbanMilwaukeeSource,

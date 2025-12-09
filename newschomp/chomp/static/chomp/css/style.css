@@ -231,3 +231,10 @@ header {
 .button-miamiliving:hover {
     background-color: #ee5a5a;
 }
+.button-austinchronicle {
+    background-color: #e67e22;
+}
+
+.button-austinchronicle:hover {
+    background-color: #d35400;
+}
