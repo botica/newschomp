@@ -12,3 +12,4 @@ current sources:
 *block club chicago*  
 *the gothamist*  
 *miami living*  
+*303 magazine*  
