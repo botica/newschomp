@@ -10,6 +10,7 @@ from .blockclubchicago import BlockClubChicagoSource
 from .gothamist import GothamistSource
 from .miamiliving import MiamiLivingSource
 from .magazine303 import Magazine303Source
+from .iexaminer import IExaminerSource
 
 # Registry of available news sources
 NEWS_SOURCES = {
@@ -24,6 +25,7 @@ NEWS_SOURCES = {
     'gothamist': GothamistSource,
     'miamiliving': MiamiLivingSource,
     '303magazine': Magazine303Source,
+    'iexaminer': IExaminerSource,
 }
 
 def get_source(source_name):
