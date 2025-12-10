@@ -13,3 +13,5 @@ current sources:
 *the gothamist*  
 *miami living*  
 *303 magazine*  
+*international examiner*  
+*gambit*  
