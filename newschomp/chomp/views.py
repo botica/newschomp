@@ -5,13 +5,16 @@ from .models import Article
 from .forms import ArticleSearchForm
 from .utils import generate_summary
 from .sources import get_source
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse, urlunparse, unquote
 import requests
 
 
 def normalize_url(url):
-    """Strip fragment from URL for duplicate checking."""
-    parsed = urlparse(url)
+    """Normalize URL for duplicate checking: decode percent-encoding and strip fragment."""
+    # First decode any percent-encoded characters (e.g., %E2%81%A0 -> actual unicode)
+    decoded_url = unquote(url)
+    # Then parse and strip fragment
+    parsed = urlparse(decoded_url)
     return urlunparse(parsed._replace(fragment=''))
 
 
@@ -69,9 +72,9 @@ def search_article(request):
                                 article_data['summary'] = ai_data.get('summary')
                                 article_data['ai_title'] = ai_data.get('ai_title')
 
-                        # Create the article
+                        # Create the article with normalized URL for consistent duplicate checking
                         article = Article.objects.create(
-                            url=article_data['url'],
+                            url=normalize_url(article_data['url']),
                             title=article_data['title'],
                             pub_date=article_data.get('pub_date') or timezone.now(),
                             content=article_data.get('content', ''),
@@ -149,9 +152,9 @@ def fetch_article_from_source(request, source_name):
                         article_data['summary'] = ai_data.get('summary')
                         article_data['ai_title'] = ai_data.get('ai_title')
 
-                # Create the article
+                # Create the article with normalized URL for consistent duplicate checking
                 article = Article.objects.create(
-                    url=article_data['url'],
+                    url=normalize_url(article_data['url']),
                     title=article_data['title'],
                     pub_date=article_data.get('pub_date') or timezone.now(),
                     content=article_data.get('content', ''),

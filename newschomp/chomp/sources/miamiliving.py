@@ -60,6 +60,7 @@ class MiamiLivingSource(NewsSource):
         """
         Get article URLs from Miami Living Magazine Food/Drink and Culture sections.
         Uses Playwright for JavaScript rendering (Wix site).
+        Tries all category pages before giving up.
 
         Args:
             query: Not used for this source (can be None)
@@ -69,57 +70,68 @@ class MiamiLivingSource(NewsSource):
         """
         from playwright.sync_api import sync_playwright
 
-        category_url = random.choice(self.CATEGORY_PAGES)
-        print(f"Fetching articles from category: {category_url}")
+        # Shuffle category pages to randomize which one we try first
+        category_pages = self.CATEGORY_PAGES.copy()
+        random.shuffle(category_pages)
 
-        try:
-            with sync_playwright() as p:
-                browser = p.chromium.launch(headless=True)
-                page = browser.new_page()
-                page.goto(category_url, wait_until='networkidle', timeout=30000)
+        for category_url in category_pages:
+            print(f"Fetching articles from category: {category_url}")
 
-                # Wait for gallery items to load
-                try:
-                    page.wait_for_selector('.gallery-item-container', timeout=10000)
-                except:
-                    print('Gallery items not found, continuing...')
+            try:
+                with sync_playwright() as p:
+                    browser = p.chromium.launch(headless=True)
+                    page = browser.new_page()
+                    page.goto(category_url, wait_until='networkidle', timeout=30000)
 
-                html = page.content()
-                browser.close()
+                    # Wait for gallery items to load
+                    try:
+                        page.wait_for_selector('.gallery-item-container', timeout=10000)
+                    except:
+                        print('Gallery items not found, continuing...')
 
-            soup = BeautifulSoup(html, 'html.parser')
+                    html = page.content()
+                    browser.close()
 
-            article_urls = []
+                soup = BeautifulSoup(html, 'html.parser')
 
-            # Find all gallery-item-container divs
-            for container in soup.find_all(class_='gallery-item-container'):
-                # Find the <a> tag inside
-                link = container.find('a')
-                if link:
-                    href = link.get('href')
-                    if href:
-                        # Convert relative URLs to absolute URLs
-                        if href.startswith('/'):
-                            href = f"https://www.miamilivingmagazine.com{href}"
-                        # Only include article URLs (those with /post/)
-                        if '/post/' in href:
-                            article_urls.append(href)
-                            print(f"Found article: {href}")
+                article_urls = []
 
-            # Remove duplicates while preserving order
-            seen = set()
-            unique_urls = []
-            for url in article_urls:
-                if url not in seen:
-                    seen.add(url)
-                    unique_urls.append(url)
+                # Find all gallery-item-container divs
+                for container in soup.find_all(class_='gallery-item-container'):
+                    # Find the <a> tag inside
+                    link = container.find('a')
+                    if link:
+                        href = link.get('href')
+                        if href:
+                            # Convert relative URLs to absolute URLs
+                            if href.startswith('/'):
+                                href = f"https://www.miamilivingmagazine.com{href}"
+                            # Only include article URLs (those with /post/)
+                            if '/post/' in href:
+                                article_urls.append(href)
+                                print(f"Found article: {href}")
 
-            print(f"Found {len(unique_urls)} unique article URLs")
-            return unique_urls
+                # Remove duplicates while preserving order
+                seen = set()
+                unique_urls = []
+                for url in article_urls:
+                    if url not in seen:
+                        seen.add(url)
+                        unique_urls.append(url)
 
-        except Exception as e:
-            print(f"Error fetching category page: {type(e).__name__}: {e}")
-            return []
+                if unique_urls:
+                    print(f"Found {len(unique_urls)} unique article URLs")
+                    return unique_urls
+                else:
+                    print(f"No articles found on {category_url}, trying next category...")
+
+            except Exception as e:
+                print(f"Error fetching category page {category_url}: {type(e).__name__}: {e}")
+                print("Trying next category page...")
+                continue
+
+        print("All category pages failed or returned no articles")
+        return []
 
     def extract(self, html_string):
         """
