@@ -44,72 +44,82 @@ class STLMagSource(NewsSource):
 
     def search(self, query=None):
         """
-        Get article URLs from a random category page.
+        Get article URLs from category pages.
+        Tries all category pages before giving up.
         Note: This source doesn't use search queries - it browses category pages.
 
         Args:
             query: Not used for this source (can be None)
 
         Returns:
-            list: List of article URLs from a random category
+            list: List of article URLs from the category
         """
         import requests
 
-        # Pick a random category
-        category_url = random.choice(self.CATEGORY_PAGES)
-        print(f"Fetching articles from category: {category_url}")
+        # Shuffle category pages to randomize which one we try first
+        category_pages = self.CATEGORY_PAGES.copy()
+        random.shuffle(category_pages)
 
-        try:
-            # Fetch the category page
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            }
-            response = requests.get(category_url, headers=headers)
-            response.raise_for_status()
-            html = response.text
+        for category_url in category_pages:
+            print(f"Fetching articles from category: {category_url}")
 
-            # Parse the HTML
-            soup = BeautifulSoup(html, 'html.parser')
+            try:
+                # Fetch the category page
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                }
+                response = requests.get(category_url, headers=headers)
+                response.raise_for_status()
+                html = response.text
 
-            # Find all article cards with class 'c-article-card'
-            article_cards = soup.find_all('article', class_='c-article-card')
-            print(f"Found {len(article_cards)} article cards on page")
+                # Parse the HTML
+                soup = BeautifulSoup(html, 'html.parser')
 
-            article_urls = []
-            for card in article_cards:
-                # Find the h2 with class 'c-article-card__title'
-                title_h2 = card.find('h2', class_='c-article-card__title')
-                if title_h2:
-                    # Find the link within the h2
-                    link = title_h2.find('a', href=True)
-                    if link:
-                        href = link.get('href', '')
+                # Find all article cards with class 'c-article-card'
+                article_cards = soup.find_all('article', class_='c-article-card')
+                print(f"Found {len(article_cards)} article cards on page")
 
-                        # Normalize URL - handle relative paths
-                        if href.startswith('/'):
-                            href = f"https://www.stlmag.com{href}"
-                        elif not href.startswith('http'):
-                            href = f"https://www.stlmag.com/{href}"
+                article_urls = []
+                for card in article_cards:
+                    # Find the h2 with class 'c-article-card__title'
+                    title_h2 = card.find('h2', class_='c-article-card__title')
+                    if title_h2:
+                        # Find the link within the h2
+                        link = title_h2.find('a', href=True)
+                        if link:
+                            href = link.get('href', '')
 
-                        article_urls.append(href)
+                            # Normalize URL - handle relative paths
+                            if href.startswith('/'):
+                                href = f"https://www.stlmag.com{href}"
+                            elif not href.startswith('http'):
+                                href = f"https://www.stlmag.com/{href}"
 
-            # Remove duplicates while preserving order
-            seen = set()
-            unique_urls = []
-            for url in article_urls:
-                if url not in seen:
-                    seen.add(url)
-                    unique_urls.append(url)
+                            article_urls.append(href)
 
-            print(f"Found {len(unique_urls)} unique article URLs")
-            for url in unique_urls[:10]:
-                print(f"  {url}")
+                # Remove duplicates while preserving order
+                seen = set()
+                unique_urls = []
+                for url in article_urls:
+                    if url not in seen:
+                        seen.add(url)
+                        unique_urls.append(url)
 
-            return unique_urls
+                if unique_urls:
+                    print(f"Found {len(unique_urls)} unique article URLs")
+                    for url in unique_urls[:10]:
+                        print(f"  {url}")
+                    return unique_urls
+                else:
+                    print(f"No articles found on {category_url}, trying next category...")
 
-        except Exception as e:
-            print(f"Error fetching category page: {type(e).__name__}: {e}")
-            return []
+            except Exception as e:
+                print(f"Error fetching category page {category_url}: {type(e).__name__}: {e}")
+                print("Trying next category page...")
+                continue
+
+        print("All category pages failed or returned no articles")
+        return []
 
     def extract(self, html_string):
         """

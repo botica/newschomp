@@ -23,6 +23,7 @@ class GothamistSource(NewsSource):
     def search(self, query=None):
         """
         Get article URLs from The Gothamist Arts & Entertainment section.
+        Tries all category pages before giving up.
         Note: This source doesn't use search queries - it browses the category page.
 
         Args:
@@ -31,47 +32,59 @@ class GothamistSource(NewsSource):
         Returns:
             list: List of article URLs from the category
         """
-        category_url = random.choice(self.CATEGORY_PAGES)
-        print(f"Fetching articles from category: {category_url}")
+        import requests
 
-        try:
-            # Fetch the category page
-            import requests
-            response = requests.get(category_url)
-            response.raise_for_status()
-            html = response.text
+        # Shuffle category pages to randomize which one we try first
+        category_pages = self.CATEGORY_PAGES.copy()
+        random.shuffle(category_pages)
 
-            # Parse the HTML
-            soup = BeautifulSoup(html, 'html.parser')
+        for category_url in category_pages:
+            print(f"Fetching articles from category: {category_url}")
 
-            # Find article links using card-title-link class
-            article_urls = []
+            try:
+                # Fetch the category page
+                response = requests.get(category_url)
+                response.raise_for_status()
+                html = response.text
 
-            # Find all links with card-title-link class
-            for link in soup.find_all('a', class_='card-title-link'):
-                href = link.get('href')
-                if href:
-                    # Convert relative URLs to absolute URLs
-                    if href.startswith('/'):
-                        href = f"https://gothamist.com{href}"
-                    if href.startswith('http'):
-                        article_urls.append(href)
-                        print(f"Found article: {href}")
+                # Parse the HTML
+                soup = BeautifulSoup(html, 'html.parser')
 
-            # Remove duplicates while preserving order
-            seen = set()
-            unique_urls = []
-            for url in article_urls:
-                if url not in seen:
-                    seen.add(url)
-                    unique_urls.append(url)
+                # Find article links using card-title-link class
+                article_urls = []
 
-            print(f"Found {len(unique_urls)} unique article URLs")
-            return unique_urls
+                # Find all links with card-title-link class
+                for link in soup.find_all('a', class_='card-title-link'):
+                    href = link.get('href')
+                    if href:
+                        # Convert relative URLs to absolute URLs
+                        if href.startswith('/'):
+                            href = f"https://gothamist.com{href}"
+                        if href.startswith('http'):
+                            article_urls.append(href)
+                            print(f"Found article: {href}")
 
-        except Exception as e:
-            print(f"Error fetching category page: {type(e).__name__}: {e}")
-            return []
+                # Remove duplicates while preserving order
+                seen = set()
+                unique_urls = []
+                for url in article_urls:
+                    if url not in seen:
+                        seen.add(url)
+                        unique_urls.append(url)
+
+                if unique_urls:
+                    print(f"Found {len(unique_urls)} unique article URLs")
+                    return unique_urls
+                else:
+                    print(f"No articles found on {category_url}, trying next category...")
+
+            except Exception as e:
+                print(f"Error fetching category page {category_url}: {type(e).__name__}: {e}")
+                print("Trying next category page...")
+                continue
+
+        print("All category pages failed or returned no articles")
+        return []
 
     def extract(self, html_string):
         """

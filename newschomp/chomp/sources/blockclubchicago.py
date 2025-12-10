@@ -23,7 +23,8 @@ class BlockClubChicagoSource(NewsSource):
 
     def search(self, query=None):
         """
-        Get article URLs from the arts-culture category page.
+        Get article URLs from category pages.
+        Tries all category pages before giving up.
         Note: This source doesn't use search queries - it browses the category page.
 
         Args:
@@ -32,48 +33,59 @@ class BlockClubChicagoSource(NewsSource):
         Returns:
             list: List of article URLs from the category
         """
-        # Pick a random category (currently only one)
-        category_url = random.choice(self.CATEGORY_PAGES)
-        print(f"Fetching articles from category: {category_url}")
+        import requests
 
-        try:
-            # Fetch the category page
-            import requests
-            response = requests.get(category_url)
-            response.raise_for_status()
-            html = response.text
+        # Shuffle category pages to randomize which one we try first
+        category_pages = self.CATEGORY_PAGES.copy()
+        random.shuffle(category_pages)
 
-            # Parse the HTML
-            soup = BeautifulSoup(html, 'html.parser')
+        for category_url in category_pages:
+            print(f"Fetching articles from category: {category_url}")
 
-            # Find article links - they're in <h3 class="entry-title">
-            article_urls = []
-            entry_titles = soup.find_all('h3', class_='entry-title')
-            print(f"Found {len(entry_titles)} entry-title elements")
+            try:
+                # Fetch the category page
+                response = requests.get(category_url)
+                response.raise_for_status()
+                html = response.text
 
-            for title_elem in entry_titles:
-                # Find the <a> tag within the h3
-                link = title_elem.find('a', href=True)
-                if link:
+                # Parse the HTML
+                soup = BeautifulSoup(html, 'html.parser')
+
+                # Find ALL anchor tags with article URLs (date pattern in URL)
+                # This catches articles regardless of their container element
+                article_urls = []
+                all_links = soup.find_all('a', href=True)
+                print(f"Found {len(all_links)} total links on page")
+
+                for link in all_links:
                     href = link.get('href')
-                    if href and href.startswith('http'):
+                    # Match URLs with date pattern like /2025/12/09/ (article URLs)
+                    if href and re.search(r'blockclubchicago\.org/\d{4}/\d{2}/\d{2}/', href):
                         article_urls.append(href)
-                        print(f"Found article: {href}")
 
-            # Remove duplicates while preserving order
-            seen = set()
-            unique_urls = []
-            for url in article_urls:
-                if url not in seen:
-                    seen.add(url)
-                    unique_urls.append(url)
+                print(f"Found {len(article_urls)} article links before deduplication")
 
-            print(f"Found {len(unique_urls)} unique article URLs")
-            return unique_urls
+                # Remove duplicates while preserving order
+                seen = set()
+                unique_urls = []
+                for url in article_urls:
+                    if url not in seen:
+                        seen.add(url)
+                        unique_urls.append(url)
 
-        except Exception as e:
-            print(f"Error fetching category page: {type(e).__name__}: {e}")
-            return []
+                if unique_urls:
+                    print(f"Found {len(unique_urls)} unique article URLs")
+                    return unique_urls
+                else:
+                    print(f"No articles found on {category_url}, trying next category...")
+
+            except Exception as e:
+                print(f"Error fetching category page {category_url}: {type(e).__name__}: {e}")
+                print("Trying next category page...")
+                continue
+
+        print("All category pages failed or returned no articles")
+        return []
 
     def extract(self, html_string):
         """

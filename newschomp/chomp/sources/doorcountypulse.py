@@ -26,85 +26,92 @@ class DoorCountyPulseSource(NewsSource):
 
     def search(self, query=None):
         """
-        Get article URLs from a random category page.
+        Get article URLs from category pages.
+        Tries all category pages before giving up.
         Note: This source doesn't use search queries - it browses category pages.
 
         Args:
             query: Not used for this source (can be None)
 
         Returns:
-            list: List of article URLs from a random category, sorted by newest first
+            list: List of article URLs from the category, sorted by newest first
         """
-        # Pick a random category
-        category_url = random.choice(self.CATEGORY_PAGES)
-        print(f"Fetching articles from category: {category_url}")
+        # Shuffle category pages to randomize which one we try first
+        category_pages = self.CATEGORY_PAGES.copy()
+        random.shuffle(category_pages)
 
-        try:
-            # Fetch the category page
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            }
-            response = requests.get(category_url, headers=headers)
-            response.raise_for_status()
+        for category_url in category_pages:
+            print(f"Fetching articles from category: {category_url}")
 
-            # Parse the page
-            soup = BeautifulSoup(response.text, 'html.parser')
+            try:
+                # Fetch the category page
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                }
+                response = requests.get(category_url, headers=headers)
+                response.raise_for_status()
 
-            # Find all article elements with class containing 'post'
-            # Articles are sorted by newest first on the page
-            # Note: The actual HTML uses <li> elements, not <div>
-            article_elements = soup.find_all('li', class_=lambda x: x and 'post' in x)
+                # Parse the page
+                soup = BeautifulSoup(response.text, 'html.parser')
 
-            if not article_elements:
-                print("No article elements found on category page")
-                return []
+                # Find all article elements with class containing 'post'
+                # Articles are sorted by newest first on the page
+                # Note: The actual HTML uses <li> elements, not <div>
+                article_elements = soup.find_all('li', class_=lambda x: x and 'post' in x)
 
-            print(f"Found {len(article_elements)} article elements")
-
-            # Extract article URLs
-            article_urls = []
-            for article_elem in article_elements:
-                # Find <p class="hentry__title"> containing the article link
-                # Note: It's "hentry__title" with double underscores, not "hentry-title"
-                title_p = article_elem.find('p', class_='hentry__title')
-                if not title_p:
+                if not article_elements:
+                    print(f"No article elements found on {category_url}, trying next category...")
                     continue
 
-                # Find the <a> tag within it
-                link_tag = title_p.find('a')
-                if not link_tag:
-                    continue
+                print(f"Found {len(article_elements)} article elements")
 
-                article_url = link_tag.get('href')
-                if not article_url:
-                    continue
+                # Extract article URLs
+                article_urls = []
+                for article_elem in article_elements:
+                    # Find <p class="hentry__title"> containing the article link
+                    # Note: It's "hentry__title" with double underscores, not "hentry-title"
+                    title_p = article_elem.find('p', class_='hentry__title')
+                    if not title_p:
+                        continue
 
-                # Ensure it's a full URL
-                if not article_url.startswith('http'):
-                    article_url = f"https://doorcountypulse.com{article_url}"
+                    # Find the <a> tag within it
+                    link_tag = title_p.find('a')
+                    if not link_tag:
+                        continue
 
-                # Skip podcast articles (only if 'podcast' is at the start of the path)
-                # Extract path after base URL
-                path = article_url.replace('https://doorcountypulse.com/', '')
-                if path.lower().startswith('podcast'):
-                    print(f"Skipping podcast URL: {article_url}")
-                    continue
+                    article_url = link_tag.get('href')
+                    if not article_url:
+                        continue
 
-                print(f"Found article URL: {article_url}")
-                article_urls.append(article_url)
+                    # Ensure it's a full URL
+                    if not article_url.startswith('http'):
+                        article_url = f"https://doorcountypulse.com{article_url}"
 
-            if not article_urls:
-                print("No article URLs extracted from category page")
-            else:
-                print(f"Successfully extracted {len(article_urls)} article URLs")
+                    # Skip podcast articles (only if 'podcast' is at the start of the path)
+                    # Extract path after base URL
+                    path = article_url.replace('https://doorcountypulse.com/', '')
+                    if path.lower().startswith('podcast'):
+                        print(f"Skipping podcast URL: {article_url}")
+                        continue
 
-            return article_urls
+                    print(f"Found article URL: {article_url}")
+                    article_urls.append(article_url)
 
-        except Exception as e:
-            print(f"Error fetching category page: {type(e).__name__}: {e}")
-            import traceback
-            traceback.print_exc()
-            return []
+                if article_urls:
+                    print(f"Successfully extracted {len(article_urls)} article URLs")
+                    return article_urls
+                else:
+                    print(f"No article URLs extracted from {category_url}, trying next category...")
+
+            except Exception as e:
+                print(f"Error fetching category page {category_url}: {type(e).__name__}: {e}")
+                import traceback
+                traceback.print_exc()
+                print("Trying next category page...")
+                continue
+
+        print("All category pages failed or returned no articles")
+        return []
 
     def extract(self, html_string):
         """

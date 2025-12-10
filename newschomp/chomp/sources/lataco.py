@@ -58,117 +58,127 @@ class LATacoSource(NewsSource):
 
     def search(self, query=None):
         """
-        Get article URLs from a random category page using Playwright for JavaScript rendering.
+        Get article URLs from category pages using Playwright for JavaScript rendering.
+        Tries all category pages before giving up.
         Note: This source doesn't use search queries - it browses category pages.
 
         Args:
             query: Not used for this source (can be None)
 
         Returns:
-            list: List of article URLs from a random category
+            list: List of article URLs from the category
         """
         from playwright.sync_api import sync_playwright
 
-        # Pick a random category
-        category_url = random.choice(self.CATEGORY_PAGES)
-        print(f"Fetching articles from category: {category_url}")
+        # Shuffle category pages to randomize which one we try first
+        category_pages = self.CATEGORY_PAGES.copy()
+        random.shuffle(category_pages)
 
-        try:
-            with sync_playwright() as p:
-                # Launch browser
-                browser = p.chromium.launch(headless=True)
-                page = browser.new_page()
+        for category_url in category_pages:
+            print(f"Fetching articles from category: {category_url}")
 
-                # Navigate to category page
-                page.goto(category_url, wait_until='networkidle', timeout=30000)
+            try:
+                with sync_playwright() as p:
+                    # Launch browser
+                    browser = p.chromium.launch(headless=True)
+                    page = browser.new_page()
 
-                # Wait for links to appear (indicating content has loaded)
-                try:
-                    page.wait_for_selector('a[href*="lataco.com"]', timeout=10000)
-                except:
-                    # If no links found, continue anyway
-                    print("No links found, continuing with page as-is")
+                    # Navigate to category page
+                    page.goto(category_url, wait_until='networkidle', timeout=30000)
 
-                # Get the rendered HTML
-                html = page.content()
-                browser.close()
+                    # Wait for links to appear (indicating content has loaded)
+                    try:
+                        page.wait_for_selector('a[href*="lataco.com"]', timeout=10000)
+                    except:
+                        # If no links found, continue anyway
+                        print("No links found, continuing with page as-is")
 
-                # Parse the HTML
-                soup = BeautifulSoup(html, 'html.parser')
+                    # Get the rendered HTML
+                    html = page.content()
+                    browser.close()
 
-                # Find all links
-                all_links = soup.find_all('a', href=True)
-                print(f"Found {len(all_links)} total links on page")
+                    # Parse the HTML
+                    soup = BeautifulSoup(html, 'html.parser')
 
-                # Debug: Show first 10 links
-                print("First 10 links found:")
-                for i, link in enumerate(all_links[:10]):
-                    href = link.get('href', '')
-                    text = link.get_text(strip=True)[:50]
-                    print(f"  {i+1}. {href} | Text: {text}")
+                    # Find all links
+                    all_links = soup.find_all('a', href=True)
+                    print(f"Found {len(all_links)} total links on page")
 
-                # Filter for article links
-                article_urls = []
-                for link in all_links:
-                    href = link.get('href', '')
+                    # Debug: Show first 10 links
+                    print("First 10 links found:")
+                    for i, link in enumerate(all_links[:10]):
+                        href = link.get('href', '')
+                        text = link.get_text(strip=True)[:50]
+                        print(f"  {i+1}. {href} | Text: {text}")
 
-                    if not href or href.startswith('#'):
-                        continue
+                    # Filter for article links
+                    article_urls = []
+                    for link in all_links:
+                        href = link.get('href', '')
 
-                    # Normalize URL - handle relative paths
-                    if href.startswith('/') and not href.startswith('//'):
-                        href = f"https://lataco.com{href}"
-                    elif href.startswith('//'):
-                        href = f"https:{href}"
-                    elif not href.startswith('http'):
-                        continue
+                        if not href or href.startswith('#'):
+                            continue
 
-                    # Exclude shop and unwanted pages
-                    if ('shop.lataco.com' in href or
-                        '/category/' in href or
-                        '/tag/' in href or
-                        '/author/' in href or
-                        '/neighborhoods' in href or
-                        '/products' in href or
-                        '/members' in href or
-                        '/join' in href or
-                        '/login' in href or
-                        '/sponsor' in href or
-                        '/mobile-apps' in href or
-                        '/local-business-directory' in href or
-                        '/send-us-your-stuff' in href or
-                        '/terms-of-service' in href or
-                        '/privacy-policy' in href or
-                        '/about' in href or
-                        href in ['https://lataco.com/', 'https://lataco.com', 'https://www.lataco.com/', 'https://www.lataco.com']):
-                        continue
+                        # Normalize URL - handle relative paths
+                        if href.startswith('/') and not href.startswith('//'):
+                            href = f"https://lataco.com{href}"
+                        elif href.startswith('//'):
+                            href = f"https:{href}"
+                        elif not href.startswith('http'):
+                            continue
 
-                    # Must be lataco.com domain
-                    if 'lataco.com' not in href:
-                        continue
+                        # Exclude shop and unwanted pages
+                        if ('shop.lataco.com' in href or
+                            '/category/' in href or
+                            '/tag/' in href or
+                            '/author/' in href or
+                            '/neighborhoods' in href or
+                            '/products' in href or
+                            '/members' in href or
+                            '/join' in href or
+                            '/login' in href or
+                            '/sponsor' in href or
+                            '/mobile-apps' in href or
+                            '/local-business-directory' in href or
+                            '/send-us-your-stuff' in href or
+                            '/terms-of-service' in href or
+                            '/privacy-policy' in href or
+                            '/about' in href or
+                            href in ['https://lataco.com/', 'https://lataco.com', 'https://www.lataco.com/', 'https://www.lataco.com']):
+                            continue
 
-                    # Check if it looks like an article (has a meaningful path)
-                    path = href.replace('https://lataco.com/', '').replace('https://www.lataco.com/', '')
-                    if path and len(path) > 10:  # Articles usually have longer paths
-                        article_urls.append(href)
+                        # Must be lataco.com domain
+                        if 'lataco.com' not in href:
+                            continue
 
-                # Remove duplicates while preserving order
-                seen = set()
-                unique_urls = []
-                for url in article_urls:
-                    if url not in seen:
-                        seen.add(url)
-                        unique_urls.append(url)
+                        # Check if it looks like an article (has a meaningful path)
+                        path = href.replace('https://lataco.com/', '').replace('https://www.lataco.com/', '')
+                        if path and len(path) > 10:  # Articles usually have longer paths
+                            article_urls.append(href)
 
-                print(f"Found {len(unique_urls)} potential article URLs")
-                for url in unique_urls[:10]:
-                    print(f"  {url}")
+                    # Remove duplicates while preserving order
+                    seen = set()
+                    unique_urls = []
+                    for url in article_urls:
+                        if url not in seen:
+                            seen.add(url)
+                            unique_urls.append(url)
 
-                return unique_urls
+                    if unique_urls:
+                        print(f"Found {len(unique_urls)} potential article URLs")
+                        for url in unique_urls[:10]:
+                            print(f"  {url}")
+                        return unique_urls
+                    else:
+                        print(f"No articles found on {category_url}, trying next category...")
 
-        except Exception as e:
-            print(f"Error fetching category page: {type(e).__name__}: {e}")
-            return []
+            except Exception as e:
+                print(f"Error fetching category page {category_url}: {type(e).__name__}: {e}")
+                print("Trying next category page...")
+                continue
+
+        print("All category pages failed or returned no articles")
+        return []
 
     def extract(self, html_string):
         """

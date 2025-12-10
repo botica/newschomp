@@ -25,73 +25,81 @@ class UrbanMilwaukeeSource(NewsSource):
 
     def search(self, query=None):
         """
-        Get article URLs from a random category page.
+        Get article URLs from category pages.
+        Tries all category pages before giving up.
         Note: This source doesn't use search queries - it browses category pages.
 
         Args:
             query: Not used for this source (can be None)
 
         Returns:
-            list: List of article URLs from a random category, sorted by newest first
+            list: List of article URLs from the category, sorted by newest first
         """
-        # Pick a random category
-        category_url = random.choice(self.CATEGORY_PAGES)
-        print(f"Fetching articles from category: {category_url}")
+        import re
 
-        try:
-            # Fetch the category page
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            }
-            response = requests.get(category_url, headers=headers)
-            response.raise_for_status()
+        # Shuffle category pages to randomize which one we try first
+        category_pages = self.CATEGORY_PAGES.copy()
+        random.shuffle(category_pages)
 
-            # Parse the page
-            soup = BeautifulSoup(response.text, 'html.parser')
+        for category_url in category_pages:
+            print(f"Fetching articles from category: {category_url}")
 
-            # Different category pages use different class names
-            # Try "homepage-post" first (used by arts-entertainment)
-            article_divs = soup.find_all('div', class_='homepage-post')
+            try:
+                # Fetch the category page
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                }
+                response = requests.get(category_url, headers=headers)
+                response.raise_for_status()
 
-            # If not found, try "wide-story-block" (used by food-drink)
-            if not article_divs:
-                article_divs = soup.find_all('div', class_='wide-story-block')
+                # Parse the page
+                soup = BeautifulSoup(response.text, 'html.parser')
 
-            if not article_divs:
-                print("No article divs found on category page")
-                return []
+                # Different category pages use different class names
+                # Try "homepage-post" first (used by arts-entertainment)
+                article_divs = soup.find_all('div', class_='homepage-post')
 
-            print(f"Found {len(article_divs)} article divs")
+                # If not found, try "wide-story-block" (used by food-drink)
+                if not article_divs:
+                    article_divs = soup.find_all('div', class_='wide-story-block')
 
-            # Extract article URLs
-            article_urls = []
-            import re
-            for article_div in article_divs:
-                # Find any <a> tag with a date pattern in the URL (YYYY/MM/DD)
-                link = article_div.find('a', href=lambda x: x and re.search(r'/\d{4}/\d{2}/\d{2}/', x))
+                if not article_divs:
+                    print(f"No article divs found on {category_url}, trying next category...")
+                    continue
 
-                if link:
-                    article_url = link.get('href')
-                    if article_url:
-                        # Ensure it's a full URL
-                        if not article_url.startswith('http'):
-                            article_url = f"https://urbanmilwaukee.com{article_url}"
+                print(f"Found {len(article_divs)} article divs")
 
-                        print(f"Found article URL: {article_url}")
-                        article_urls.append(article_url)
+                # Extract article URLs
+                article_urls = []
+                for article_div in article_divs:
+                    # Find any <a> tag with a date pattern in the URL (YYYY/MM/DD)
+                    link = article_div.find('a', href=lambda x: x and re.search(r'/\d{4}/\d{2}/\d{2}/', x))
 
-            if not article_urls:
-                print("No article URLs extracted from category page")
-            else:
-                print(f"Successfully extracted {len(article_urls)} article URLs")
+                    if link:
+                        article_url = link.get('href')
+                        if article_url:
+                            # Ensure it's a full URL
+                            if not article_url.startswith('http'):
+                                article_url = f"https://urbanmilwaukee.com{article_url}"
 
-            return article_urls
+                            print(f"Found article URL: {article_url}")
+                            article_urls.append(article_url)
 
-        except Exception as e:
-            print(f"Error fetching category page: {type(e).__name__}: {e}")
-            import traceback
-            traceback.print_exc()
-            return []
+                if article_urls:
+                    print(f"Successfully extracted {len(article_urls)} article URLs")
+                    return article_urls
+                else:
+                    print(f"No article URLs extracted from {category_url}, trying next category...")
+
+            except Exception as e:
+                print(f"Error fetching category page {category_url}: {type(e).__name__}: {e}")
+                import traceback
+                traceback.print_exc()
+                print("Trying next category page...")
+                continue
+
+        print("All category pages failed or returned no articles")
+        return []
 
     def extract(self, html_string):
         """
