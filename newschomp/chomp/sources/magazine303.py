@@ -1,28 +1,19 @@
-import random
-import re
 from bs4 import BeautifulSoup
 from datetime import datetime
 from django.utils import timezone
 from .base import NewsSource
 
 
-class STLMagSource(NewsSource):
-    """STL Magazine article source implementation"""
-
-    # Category pages to scrape
-    CATEGORY_PAGES = [
-        'https://www.stlmag.com/dining/',
-        'https://www.stlmag.com/culture/',
-        'https://www.stlmag.com/health/',
-    ]
+class Magazine303Source(NewsSource):
+    """303 Magazine (Denver) article source implementation"""
 
     @property
     def name(self):
-        return "STL Magazine"
+        return "303 Magazine"
 
     @property
     def source_key(self):
-        return "stlmag"
+        return "303magazine"
 
     def fetch(self, url):
         """
@@ -44,53 +35,55 @@ class STLMagSource(NewsSource):
 
     def search(self, query=None):
         """
-        Get article URLs from a random category page.
-        Note: This source doesn't use search queries - it browses category pages.
+        Get article URLs from the current month's archive page.
+        Note: This source doesn't use search queries - it browses the monthly archive.
 
         Args:
             query: Not used for this source (can be None)
 
         Returns:
-            list: List of article URLs from a random category
+            list: List of article URLs from the current month's archive
         """
         import requests
 
-        # Pick a random category
-        category_url = random.choice(self.CATEGORY_PAGES)
-        print(f"Fetching articles from category: {category_url}")
+        # Use current month's archive page for more articles
+        now = datetime.now()
+        archive_url = f"https://303magazine.com/{now.year}/{now.month:02d}/"
+        print(f"Fetching articles from archive: {archive_url}")
 
         try:
-            # Fetch the category page
+            # Fetch the archive page
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             }
-            response = requests.get(category_url, headers=headers)
+            response = requests.get(archive_url, headers=headers)
             response.raise_for_status()
             html = response.text
 
             # Parse the HTML
             soup = BeautifulSoup(html, 'html.parser')
 
-            # Find all article cards with class 'c-article-card'
-            article_cards = soup.find_all('article', class_='c-article-card')
-            print(f"Found {len(article_cards)} article cards on page")
-
             article_urls = []
-            for card in article_cards:
-                # Find the h2 with class 'c-article-card__title'
-                title_h2 = card.find('h2', class_='c-article-card__title')
-                if title_h2:
-                    # Find the link within the h2
-                    link = title_h2.find('a', href=True)
-                    if link:
-                        href = link.get('href', '')
 
-                        # Normalize URL - handle relative paths
-                        if href.startswith('/'):
-                            href = f"https://www.stlmag.com{href}"
-                        elif not href.startswith('http'):
-                            href = f"https://www.stlmag.com/{href}"
+            # Method 1: Find entry titles (cs-entry__title class)
+            entry_titles = soup.find_all(class_='cs-entry__title')
+            print(f"Found {len(entry_titles)} entry titles on page")
 
+            for title_elem in entry_titles:
+                link = title_elem.find('a', href=True)
+                if link:
+                    href = link.get('href', '')
+                    if '303magazine.com' in href and '/20' in href:
+                        article_urls.append(href)
+
+            # Method 2: Find all links that look like article URLs
+            if not article_urls:
+                all_links = soup.find_all('a', href=True)
+                print(f"Fallback: checking {len(all_links)} links on page")
+                for link in all_links:
+                    href = link.get('href', '')
+                    # Match pattern like https://303magazine.com/2025/12/article-slug/
+                    if '303magazine.com/20' in href and href.count('/') >= 5:
                         article_urls.append(href)
 
             # Remove duplicates while preserving order
@@ -108,12 +101,12 @@ class STLMagSource(NewsSource):
             return unique_urls
 
         except Exception as e:
-            print(f"Error fetching category page: {type(e).__name__}: {e}")
+            print(f"Error fetching archive page: {type(e).__name__}: {e}")
             return []
 
     def extract(self, html_string):
         """
-        Extract STL Magazine article data from HTML string.
+        Extract 303 Magazine article data from HTML string.
 
         Args:
             html_string: HTML content as string
@@ -127,9 +120,13 @@ class STLMagSource(NewsSource):
         title_tag = soup.find('meta', property='og:title')
         title = title_tag.get('content') if title_tag else None
 
-        # Extract URL from canonical link
+        # Extract URL from canonical link or og:url
         url_tag = soup.find('link', rel='canonical')
-        url = url_tag.get('href') if url_tag else None
+        if not url_tag:
+            url_tag = soup.find('meta', property='og:url')
+            url = url_tag.get('content') if url_tag else None
+        else:
+            url = url_tag.get('href') if url_tag else None
 
         # Try to extract publication date
         pub_date = None
@@ -149,41 +146,39 @@ class STLMagSource(NewsSource):
         if not pub_date:
             pub_date = timezone.now()
 
-        # Extract main content from paragraphs within content container
-        # Try wp-block-post-content first (new WordPress block editor), then entry-content (legacy)
+        # Extract main content from all paragraphs
         content_text = []
-        content_area = soup.find('div', class_='wp-block-post-content')
-        if not content_area:
-            content_area = soup.find('div', class_='entry-content')
+        paragraphs = soup.find_all('p')
+        print(f"Found {len(paragraphs)} paragraphs on page")
 
-        print(f"Found content_area: {bool(content_area)}")
-
-        if content_area:
-            # Find all <p> tags within the content area
-            paragraphs = content_area.find_all('p')
-            print(f"Found {len(paragraphs)} paragraphs in content area")
-
-            for para in paragraphs:
-                para_text = para.get_text(separator=' ', strip=True)
-                # Skip very short paragraphs (likely navigation or metadata)
-                if para_text and len(para_text) > 20:
-                    content_text.append(para_text)
-                    print(f"Added paragraph: {para_text[:80]}...")
-        else:
-            print("No content area found with class 'entry-content'")
+        for para in paragraphs:
+            para_text = para.get_text(separator=' ', strip=True)
+            # Skip very short paragraphs (likely navigation or metadata)
+            if para_text and len(para_text) > 20:
+                content_text.append(para_text)
 
         content = '\n'.join(content_text) if content_text else None
         print(f"Final content length: {len(content) if content else 0}")
 
-        # Extract main image with class 'c-single-post-image'
+        # Extract main image - prefer og:image as it's most reliable
         image_url = None
-        image_tag = soup.find('img', class_='c-single-post-image')
-        if image_tag:
-            image_url = image_tag.get('src') or image_tag.get('data-src')
-            # Normalize image URL if relative
-            if image_url and image_url.startswith('/'):
-                image_url = f"https://www.stlmag.com{image_url}"
-            print(f"Found image URL: {image_url}")
+        og_image = soup.find('meta', property='og:image')
+        if og_image:
+            image_url = og_image.get('content')
+            print(f"Found og:image: {image_url}")
+
+        # Fallback to figure tag if no og:image
+        if not image_url:
+            figure_tag = soup.find('figure')
+            if figure_tag:
+                img_tag = figure_tag.find('img')
+                if img_tag:
+                    image_url = img_tag.get('src') or img_tag.get('data-src')
+                    print(f"Found image in figure: {image_url}")
+
+        # Normalize image URL if relative
+        if image_url and image_url.startswith('/'):
+            image_url = f"https://303magazine.com{image_url}"
 
         # Extract topics using LLM
         topics = []

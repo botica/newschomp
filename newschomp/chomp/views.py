@@ -5,7 +5,14 @@ from .models import Article
 from .forms import ArticleSearchForm
 from .utils import generate_summary
 from .sources import get_source
+from urllib.parse import urlparse, urlunparse
 import requests
+
+
+def normalize_url(url):
+    """Strip fragment from URL for duplicate checking."""
+    parsed = urlparse(url)
+    return urlunparse(parsed._replace(fragment=''))
 
 
 def home(request):
@@ -41,8 +48,9 @@ def search_article(request):
                 # Iterate through URLs and find first non-duplicate
                 article_added = False
                 for article_url in article_urls:
-                    # Check if this URL already exists in database
-                    if Article.objects.filter(url=article_url).exists():
+                    # Check if this URL already exists in database (normalize to strip fragments)
+                    normalized_url = normalize_url(article_url)
+                    if Article.objects.filter(url=normalized_url).exists():
                         print(f"Skipping duplicate article: {article_url}")
                         continue
 
@@ -120,8 +128,9 @@ def fetch_article_from_source(request, source_name):
         # Iterate through URLs and find first non-duplicate
         article_added = False
         for article_url in article_urls:
-            # Check if this URL already exists in database
-            if Article.objects.filter(url=article_url).exists():
+            # Check if this URL already exists in database (normalize to strip fragments)
+            normalized_url = normalize_url(article_url)
+            if Article.objects.filter(url=normalized_url).exists():
                 print(f"Skipping duplicate article: {article_url}")
                 continue
 

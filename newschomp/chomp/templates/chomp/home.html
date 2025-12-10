@@ -54,6 +54,10 @@
                 {% csrf_token %}
                 <button type="submit" class="search-button button-austinchronicle">Get Austin Chronicle Article</button>
             </form>
+            <form method="post" action="{% url 'fetch_article' '303magazine' %}">
+                {% csrf_token %}
+                <button type="submit" class="search-button button-303magazine">Get 303 Magazine Article</button>
+            </form>
         </div>
     </div>
 

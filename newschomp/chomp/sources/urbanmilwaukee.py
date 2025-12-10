@@ -175,7 +175,13 @@ class UrbanMilwaukeeSource(NewsSource):
                 if img_tag:
                     image_url = img_tag.get('src')
 
-            print(f"DEBUG: Found image URL: {image_url}")
+        # Fallback: use og:image meta tag if no image found in wp-caption
+        if not image_url:
+            og_image_tag = soup.find('meta', property='og:image')
+            if og_image_tag:
+                image_url = og_image_tag.get('content')
+
+        print(f"DEBUG: Found image URL: {image_url}")
 
         # Extract topics using LLM
         topics = []
