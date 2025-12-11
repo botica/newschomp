@@ -66,6 +66,10 @@
                 {% csrf_token %}
                 <button type="submit" class="search-button button-gambit">Get Gambit Article</button>
             </form>
+            <form method="post" action="{% url 'fetch_article' 'reuters' %}">
+                {% csrf_token %}
+                <button type="submit" class="search-button button-reuters">Get Reuters Article</button>
+            </form>
         </div>
     </div>
 

@@ -15,3 +15,4 @@ current sources:
 *303 magazine*  
 *international examiner*  
 *gambit*  
+*reuters*  

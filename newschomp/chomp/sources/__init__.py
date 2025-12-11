@@ -12,6 +12,7 @@ from .miamiliving import MiamiLivingSource
 from .magazine303 import Magazine303Source
 from .iexaminer import IExaminerSource
 from .gambit import GambitSource
+from .reuters import ReutersSource
 
 # Registry of available news sources
 NEWS_SOURCES = {
@@ -28,6 +29,7 @@ NEWS_SOURCES = {
     '303magazine': Magazine303Source,
     'iexaminer': IExaminerSource,
     'gambit': GambitSource,
+    'reuters': ReutersSource,
 }
 
 def get_source(source_name):
