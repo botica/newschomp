@@ -6,7 +6,6 @@ news<strong>CHOMP</strong> is a django app that condenses news. llm inference is
 current sources:
 <br>
 <br>
-<br>
 world:
 <br>
 <em>apnews</em><br>
@@ -14,7 +13,7 @@ world:
 <em>reuters</em>
 <br>
 <br>
-color:
+local color:
 <br>
 <em>door county pulse</em><br>
 <em>urban milwaukee</em><br>

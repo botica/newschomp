@@ -101,7 +101,7 @@ def extract_topics_with_llm(content):
         content: Article content text or HTML
 
     Returns:
-        list: List of topic strings (3-5 topics), or empty list if extraction fails
+        list: List of topic strings (4-6 topics), or empty list if extraction fails
     """
     if not content:
         print("No content provided for topic extraction")
@@ -125,15 +125,17 @@ def extract_topics_with_llm(content):
             messages=[
                 {
                     "role": "system",
-                    "content": """You are a news article topic classifier.
-Analyze the article and identify 3-5 relevant topics.
-Include both broad categories AND specific subjects mentioned in the article.
-Examples:
-- Broad: Politics, Technology, Climate
-- Specific: Tesla, Ukraine War, Federal Reserve, Artificial Intelligence, COVID-19
-Be specific and identify key people, places, organizations, or events when relevant.
-Keep topics concise - 1-3 words per topic.
-Return only the topics, one per line, no numbering or bullets."""
+                    "content": """You are a news article topic tagger.
+Extract 4-6 keyword tags that categorize this article for comparison with other articles.
+Tags should be REUSABLE - the same tag should appear across many different articles on similar subjects.
+Specific names are OK for: locations (Gaza, Chicago, Ukraine), major figures (Trump, Musk), organizations (NATO, FDA)
+But categories should be general: Natural Disaster, Weather, Humanitarian Aid, Tech Industry, Climate, Crime
+Bad tags: "Humanitarian crisis in Gaza", "Winter storm flooding" - these are too specific to reuse
+Avoid subjective or interpretive tags like: Nostalgia, Controversy, Tragedy, Hope, Irony
+Stick to factual, objective categories.
+Think: what tags would someone use to filter or group news articles?
+Keep tags to 1-2 words each.
+Return only the tags, one per line, no numbering or bullets."""
                 },
                 {
                     "role": "user",

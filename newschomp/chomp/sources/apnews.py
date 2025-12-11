@@ -92,19 +92,15 @@ class APNewsSource(NewsSource):
         url_tag = soup.find('meta', property='og:url')
         pub_date_tag = soup.find('meta', property='article:published_time')
 
-        # Extract topics from article:tag meta tags
-        topics = []
-        topic_tags = soup.find_all('meta', property='article:tag')
-        for tag in topic_tags:
-            topic_content = tag.get('content')
-            if topic_content:
-                topics.append(topic_content)
-
-        # Remove duplicates while preserving order
-        topics = list(dict.fromkeys(topics))
-
         # Extract content div
         content_div = soup.find('div', class_='RichTextStoryBody RichTextBody')
+        content = content_div.get_text(strip=True) if content_div else None
+
+        # Extract topics using LLM
+        topics = []
+        if content:
+            from ..utils import extract_topics_with_llm
+            topics = extract_topics_with_llm(content)
 
         # Extract image from first picture tag after Page-content div
         image_url = None
@@ -144,7 +140,7 @@ class APNewsSource(NewsSource):
             'title': title_tag.get('content') if title_tag else None,
             'url': url_tag.get('content') if url_tag else None,
             'pub_date': pub_date,
-            'content': content_div.get_text(strip=True) if content_div else None,
+            'content': content,
             'image_url': image_url,
             'topics': topics
         }

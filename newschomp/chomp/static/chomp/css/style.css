@@ -78,7 +78,7 @@ header {
 }
 
 .article-title {
-    font-size: 30px;
+    font-size: 28px;
     font-weight: 600;
     line-height: 1.4;
     display: block;
@@ -93,9 +93,9 @@ header {
     color: var(--cream-light);
     text-decoration: underline;
     display: block;
-    padding: 14px 16px 10px;
     text-align: justify;
     text-align-last: justify;
+    white-space: nowrap;
 }
 
 .article-title a:hover {
