@@ -7,7 +7,6 @@ from .models import Article
 from .utils import generate_summary
 from .sources import get_source
 from urllib.parse import urlparse, urlunparse, unquote
-import requests
 import random
 
 
@@ -36,96 +35,9 @@ def home(request):
     })
 
 
-def search_article(request):
-    if request.method == 'POST':
-        form = ArticleSearchForm(request.POST)
-        if form.is_valid():
-            query = form.cleaned_data['query']
-            source_name = form.cleaned_data['source']
-
-            try:
-                # Get the news source
-                source = get_source(source_name)
-                if not source:
-                    messages.error(request, 'News source not available.')
-                    return redirect('home')
-
-                # Search for articles (returns list of URLs sorted by relevance)
-                article_urls = source.search(query)
-
-                if not article_urls:
-                    messages.error(request, 'No articles found for your search query.')
-                    return redirect('home')
-
-                # Iterate through URLs and find first non-duplicate
-                article_added = False
-                for article_url in article_urls:
-                    # Check if this URL already exists in database (normalize to strip fragments)
-                    normalized_url = normalize_url(article_url)
-                    if Article.objects.filter(url=normalized_url).exists():
-                        print(f"Skipping duplicate article: {article_url}")
-                        continue
-
-                    # This is a new article, fetch and extract it
-                    print(f"Fetching new article: {article_url}")
-                    html = source.fetch(article_url)
-
-                    # Extract article data
-                    article_data = source.extract(html)
-
-                    if article_data and article_data.get('title') and article_data.get('url'):
-                        # Check if the canonical URL (from page) is also a duplicate
-                        # This handles cases where search URL differs from canonical URL
-                        canonical_url = normalize_url(article_data['url'])
-                        if Article.objects.filter(url=canonical_url).exists():
-                            print(f"Skipping duplicate article (canonical URL): {canonical_url}")
-                            continue
-
-                        # Generate AI summary
-                        if article_data.get('content'):
-                            ai_data = generate_summary(article_data['content'])
-                            if ai_data:
-                                article_data['summary'] = ai_data.get('summary')
-                                article_data['ai_title'] = ai_data.get('ai_title')
-
-                        # Create the article with normalized URL for consistent duplicate checking
-                        article = Article.objects.create(
-                            url=normalize_url(article_data['url']),
-                            title=article_data['title'],
-                            pub_date=article_data.get('pub_date') or timezone.now(),
-                            content=article_data.get('content', ''),
-                            summary=article_data.get('summary', ''),
-                            ai_title=article_data.get('ai_title', ''),
-                            image_url=article_data.get('image_url', ''),
-                            topics=article_data.get('topics', []),
-                            source=source_name
-                        )
-
-                        messages.success(request, f'Article "{article.ai_title or article.title}" added successfully!')
-                        article_added = True
-                        break
-                    else:
-                        print(f"Failed to extract data from: {article_url}")
-                        continue
-
-                if not article_added:
-                    messages.warning(request, 'All articles found were already in the database.')
-
-            except Exception as e:
-                messages.error(request, f'Error fetching article: {str(e)}')
-                import traceback
-                traceback.print_exc()
-
-        else:
-            messages.error(request, 'Please enter a valid search query.')
-
-    return redirect('home')
-
-
 def fetch_article_from_source(request, source_name):
     """
-    Generic handler for fetching articles from any news source.
-    Supports both search-based sources (AP News, BBC) and category/RSS-based sources.
+    Fetch the first non-duplicate article from a news source's category page.
     """
     if request.method != 'POST':
         return redirect('home')
@@ -208,7 +120,7 @@ def fetch_article_from_source(request, source_name):
 
 def refresh_article(request, category):
     """
-    Fetch a new random article from a random source in the specified category.
+    Fetch a new article from a source in the specified category.
     Returns JSON with the rendered HTML for the article.
     """
     if request.method != 'POST':
@@ -217,18 +129,17 @@ def refresh_article(request, category):
     try:
         # Determine which sources to use based on category
         if category == 'world':
-            sources = WORLD_SOURCES
+            sources_to_try = WORLD_SOURCES.copy()
         elif category == 'color':
-            sources = COLOR_SOURCES
+            sources_to_try = COLOR_SOURCES.copy()
         else:
             return JsonResponse({'success': False, 'error': 'Invalid category'})
 
-        # Shuffle sources and try each one until we find a new article
-        shuffled_sources = sources.copy()
-        random.shuffle(shuffled_sources)
+        # Shuffle to randomly pick which source to try first
+        random.shuffle(sources_to_try)
 
         article_created = None
-        for source_name in shuffled_sources:
+        for source_name in sources_to_try:
             source = get_source(source_name)
 
             if not source:
