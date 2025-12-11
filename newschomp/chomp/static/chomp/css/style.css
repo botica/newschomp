@@ -1,10 +1,12 @@
 /* NewsChomp Styles */
 
 :root {
-    --bg: #faf9f6;
-    --chomp-bg: #b22234;
-    --cream: #f5f0e6;
-    --cream-muted: #d9d0c0;
+    --bg: #f8f6f3;
+    --red: #c43c4c;
+    --cream: #e8e2d9;
+    --cream-light: #f5f2ed;
+    --text-dark: #2d2926;
+    --text-light: #ffffff;
 }
 
 * {
@@ -14,30 +16,33 @@
 }
 
 body {
-    font-family: Georgia, serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background: var(--bg);
     min-height: 100vh;
-    padding: 30px 15px;
+    padding: 20px 16px;
+    color: var(--text-dark);
 }
 
 /* Header */
 header {
     display: flex;
     justify-content: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .header-logo {
-    width: 80px;
+    width: 60px;
     height: auto;
+    background: var(--red);
+    padding: 8px;
 }
 
 /* Feed Layout */
 .feed {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    max-width: 700px;
+    gap: 40px;
+    max-width: 600px;
     margin: 0 auto;
 }
 
@@ -49,100 +54,90 @@ header {
 /* Refresh Button */
 .refresh-btn {
     position: absolute;
-    top: 0;
-    right: 0;
-    background: var(--chomp-bg);
-    color: var(--cream);
-    border: 2px solid var(--cream-muted);
-    padding: 8px 16px;
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    top: 50%;
+    right: -70px;
+    transform: translateY(-50%);
+    width: 50px;
+    height: auto;
     cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.refresh-btn:hover {
-    background: var(--cream);
-    color: var(--chomp-bg);
-}
-
-.refresh-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.refresh-btn:active {
-    transform: scale(0.98);
+    background: var(--red);
+    padding: 8px;
 }
 
 #world-content,
 #color-content {
-    margin-top: 45px;
+    margin-top: 0;
 }
 
-/* Article Card (Chomp) */
+/* Article Card */
 .article-card {
-    background: var(--chomp-bg);
+    background: var(--red);
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
 .article-title {
-    font-family: Arial, sans-serif;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 600;
-    line-height: 1.3;
+    line-height: 1.4;
     display: block;
     width: 100%;
     margin: 0;
     padding: 0;
-    background: var(--chomp-bg);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .article-title a {
-    color: var(--cream);
+    color: var(--cream-light);
     text-decoration: none;
     display: block;
-    padding: 24px 24px 16px;
+    padding: 14px 16px 10px;
     text-align: justify;
     text-align-last: justify;
 }
 
 .article-title a:hover {
-    text-decoration: underline;
+    color: var(--cream);
 }
 
 .article-image {
     width: 100%;
-    height: 220px;
-    object-fit: cover;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    background: var(--red);
 }
 
 /* Summary */
 .summary {
     list-style: none;
-    padding: 16px 24px;
+    padding: 14px 18px;
+    background: var(--red);
+    margin: 0;
 }
 
 .summary li {
-    font-size: 15px;
+    font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
+    font-size: 14px;
     line-height: 1.6;
-    color: var(--cream-muted);
+    color: var(--cream-light);
     margin-bottom: 10px;
-    padding-left: 18px;
+    padding-left: 16px;
     position: relative;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-weight: 500;
 }
 
 .summary li::before {
     content: '';
     position: absolute;
     left: 0;
-    top: 9px;
+    top: 8px;
     width: 5px;
     height: 5px;
-    background: var(--cream-muted);
-    border-radius: 50%;
+    background: var(--cream-light);
 }
 
 .summary li:last-child {
@@ -151,84 +146,106 @@ header {
 
 /* Article Meta */
 .article-meta {
-    padding: 16px 24px;
-    border-top: 1px solid rgba(255,255,255,0.15);
+    padding: 10px 16px;
+    background: var(--red);
 }
 
 .meta-line {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
 .source, .pub-date {
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    color: var(--cream-muted);
+    font-size: 12px;
+    color: var(--cream-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .source {
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-weight: 700;
 }
 
 .topics {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .topic {
-    font-family: Arial, sans-serif;
-    font-size: 10px;
-    color: var(--cream-muted);
-    border: 1px solid rgba(255,255,255,0.2);
-    padding: 2px 6px;
+    font-size: 11px;
+    color: var(--red);
+    background: var(--cream);
+    padding: 4px 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
 }
 
 /* Empty State */
 .empty-state {
-    padding: 60px 24px;
+    padding: 40px 16px;
     text-align: center;
-    color: var(--cream-muted);
-    font-style: italic;
-    background: var(--chomp-bg);
+    color: var(--cream-light);
+    font-size: 14px;
+    background: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
 }
 
 /* Responsive */
-@media (max-width: 500px) {
+@media (max-width: 600px) {
     body {
-        padding: 20px 10px;
+        padding: 16px 12px;
     }
 
     .header-logo {
-        width: 60px;
+        width: 50px;
     }
 
     .refresh-btn {
-        font-size: 10px;
-        padding: 6px 12px;
+        width: 40px;
+        right: -50px;
     }
 
     #world-content,
     #color-content {
-        margin-top: 40px;
+        margin-top: 0;
     }
 
     .article-title {
-        font-size: 19px;
+        font-size: 16px;
     }
 
     .article-title a {
-        padding: 16px 18px;
+        padding: 12px 14px 8px;
+    }
+
+    .article-image {
+        max-height: 200px;
     }
 
     .summary {
-        padding: 14px 18px;
+        padding: 10px 14px;
+    }
+
+    .summary li {
+        font-size: 13px;
     }
 
     .article-meta {
-        padding: 14px 18px;
+        padding: 8px 14px;
+    }
+
+    .source, .pub-date {
+        font-size: 11px;
+    }
+
+    .topic {
+        font-size: 10px;
+        padding: 3px 8px;
     }
 }
