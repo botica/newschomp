@@ -2,134 +2,169 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>chomp ya in the mouth</title>
+    <title>newschomp</title>
     <link rel="stylesheet" href="{% static 'chomp/css/style.css' %}">
 </head>
 <body>
     <header>
         <img src="{% static 'chomp/images/mouth.png' %}" alt="Newschomp logo" class="header-logo">
-        <h1>newschomp - condensed news</h1>
     </header>
 
-    <div class="search-container">
-        <h2>get some shomp</h2>
-
-        <div class="alt-sources">
-            <form method="post" action="{% url 'fetch_article' 'apnews' %}" class="alt-source-form">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-apnews">Get AP News Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'bbc' %}" class="alt-source-form">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-bbc">Get BBC News Article</button>
-            </form>
-            <p class="alt-sources-text">or</p>
-            <form method="post" action="{% url 'fetch_article' 'doorcountypulse' %}" class="alt-source-form">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-doorcountypulse">Get Door County Pulse Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'urbanmilwaukee' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-urbanmilwaukee">Get Urban Milwaukee Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'lataco' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-lataco">Get L.A. TACO Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'stlmag' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-stlmag">Get STL Magazine Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'blockclubchicago' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-blockclubchicago">Get Block Club Chicago Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'gothamist' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-gothamist">Get Gothamist Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'miamiliving' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-miamiliving">Get Miami Living Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'austinchronicle' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-austinchronicle">Get Austin Chronicle Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' '303magazine' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-303magazine">Get 303 Magazine Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'iexaminer' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-iexaminer">Get iExaminer Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'gambit' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-gambit">Get Gambit Article</button>
-            </form>
-            <form method="post" action="{% url 'fetch_article' 'reuters' %}">
-                {% csrf_token %}
-                <button type="submit" class="search-button button-reuters">Get Reuters Article</button>
-            </form>
-        </div>
-    </div>
-
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div class="message {{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <h1>shompe's:</h1>
-
-    {% if articles %}
-        <ul>
-            {% for article in articles %}
-                <li>
-                    <h2 class="article-title">
-                        <a href="{{ article.url }}" target="_blank">
-                            {% if article.ai_title %}
-                                {{ article.ai_title }}
+    <main class="feed">
+        <section class="feed-section feed-world">
+            <button class="refresh-btn" data-category="world">Refresh World</button>
+            <div id="world-content">
+            {% if world_article %}
+                <article class="article-card">
+                    <h3 class="article-title">
+                        <a href="{{ world_article.url }}" target="_blank">
+                            {% if world_article.ai_title %}
+                                {{ world_article.ai_title }}
                             {% else %}
-                                {{ article.title }}
+                                {{ world_article.title }}
                             {% endif %}
                         </a>
-                    </h2>
-                    {% if article.image_url %}
-                        <img src="{{ article.image_url }}" alt="{{ article.title }}" class="article-image">
+                    </h3>
+                    {% if world_article.image_url %}
+                        <img src="{{ world_article.image_url }}" alt="{{ world_article.title }}" class="article-image">
                     {% endif %}
-                    {% if article.summary %}
+                    {% if world_article.summary %}
                         <ul class="summary">
-                            {% for line in article.summary.splitlines %}
+                            {% for line in world_article.summary.splitlines %}
                                 {% if line.strip %}
                                     <li>{{ line }}</li>
                                 {% endif %}
                             {% endfor %}
                         </ul>
-                    {% else %}
-                        <p class="no-summary">No summary available</p>
                     {% endif %}
                     <div class="article-meta">
-                        <small>{{ article.source|upper }} | {{ article.pub_date|date:"F d, Y g:i A" }}</small>
-                    </div>
-                    {% if article.topics %}
-                        <div class="article-topics">
-                            <strong>Topics:</strong>
-                            {% for topic in article.topics %}
-                                <span class="topic-tag">{{ topic }}</span>{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
+                        <div class="meta-line">
+                            <span class="source">{{ world_article.source }}</span>
+                            {% if world_article.pub_date %}
+                                <span class="pub-date">{{ world_article.pub_date|date:"M d, Y" }}</span>
+                            {% endif %}
                         </div>
+                        {% if world_article.topics %}
+                            <div class="topics">
+                                {% for topic in world_article.topics %}
+                                    <span class="topic">{{ topic }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </article>
+            {% else %}
+                <div class="empty-state">No world news yet</div>
+            {% endif %}
+            </div>
+        </section>
+
+        <section class="feed-section feed-color">
+            <button class="refresh-btn" data-category="color">Refresh Color</button>
+            <div id="color-content">
+            {% if color_article %}
+                <article class="article-card">
+                    <h3 class="article-title">
+                        <a href="{{ color_article.url }}" target="_blank">
+                            {% if color_article.ai_title %}
+                                {{ color_article.ai_title }}
+                            {% else %}
+                                {{ color_article.title }}
+                            {% endif %}
+                        </a>
+                    </h3>
+                    {% if color_article.image_url %}
+                        <img src="{{ color_article.image_url }}" alt="{{ color_article.title }}" class="article-image">
                     {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>hi there duder</p>
-    {% endif %}
+                    {% if color_article.summary %}
+                        <ul class="summary">
+                            {% for line in color_article.summary.splitlines %}
+                                {% if line.strip %}
+                                    <li>{{ line }}</li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="article-meta">
+                        <div class="meta-line">
+                            <span class="source">{{ color_article.source }}</span>
+                            {% if color_article.pub_date %}
+                                <span class="pub-date">{{ color_article.pub_date|date:"M d, Y" }}</span>
+                            {% endif %}
+                        </div>
+                        {% if color_article.topics %}
+                            <div class="topics">
+                                {% for topic in color_article.topics %}
+                                    <span class="topic">{{ topic }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </article>
+            {% else %}
+                <div class="empty-state">No local color yet</div>
+            {% endif %}
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const refreshButtons = document.querySelectorAll('.refresh-btn');
+
+            refreshButtons.forEach(button => {
+                button.addEventListener('click', async function() {
+                    const category = this.getAttribute('data-category');
+                    const contentDiv = document.getElementById(category + '-content');
+
+                    // Disable button and show loading state
+                    this.disabled = true;
+                    this.textContent = 'Loading...';
+
+                    try {
+                        const response = await fetch(`/refresh/${category}/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'),
+                                'Content-Type': 'application/json',
+                            },
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Update the content with the new article
+                            contentDiv.innerHTML = data.html;
+                        } else {
+                            alert(data.error || 'Failed to fetch new article');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to fetch new article');
+                    } finally {
+                        // Re-enable button
+                        this.disabled = false;
+                        this.textContent = category === 'world' ? 'Refresh World' : 'Refresh Color';
+                    }
+                });
+            });
+
+            // Helper function to get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
 </body>
 </html>

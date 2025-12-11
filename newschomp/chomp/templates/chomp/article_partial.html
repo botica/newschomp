@@ -1,0 +1,42 @@
+{% if article %}
+    <article class="article-card">
+        <h3 class="article-title">
+            <a href="{{ article.url }}" target="_blank">
+                {% if article.ai_title %}
+                    {{ article.ai_title }}
+                {% else %}
+                    {{ article.title }}
+                {% endif %}
+            </a>
+        </h3>
+        {% if article.image_url %}
+            <img src="{{ article.image_url }}" alt="{{ article.title }}" class="article-image">
+        {% endif %}
+        {% if article.summary %}
+            <ul class="summary">
+                {% for line in article.summary.splitlines %}
+                    {% if line.strip %}
+                        <li>{{ line }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <div class="article-meta">
+            <div class="meta-line">
+                <span class="source">{{ article.source }}</span>
+                {% if article.pub_date %}
+                    <span class="pub-date">{{ article.pub_date|date:"M d, Y" }}</span>
+                {% endif %}
+            </div>
+            {% if article.topics %}
+                <div class="topics">
+                    {% for topic in article.topics %}
+                        <span class="topic">{{ topic }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </article>
+{% else %}
+    <div class="empty-state">No news yet</div>
+{% endif %}
