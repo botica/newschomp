@@ -209,62 +209,73 @@ def refresh_article(request, category):
         else:
             return JsonResponse({'success': False, 'error': 'Invalid category'})
 
-        # Randomly select a source
-        source_name = random.choice(sources)
-        source = get_source(source_name)
+        # Shuffle sources and try each one until we find a new article
+        shuffled_sources = sources.copy()
+        random.shuffle(shuffled_sources)
 
-        if not source:
-            return JsonResponse({'success': False, 'error': f'Source "{source_name}" not available'})
-
-        # Get article URLs from source
-        article_urls = source.search()
-
-        if not article_urls:
-            return JsonResponse({'success': False, 'error': f'No articles found from {source.name}'})
-
-        # Iterate through URLs and find first non-duplicate
         article_created = None
-        for article_url in article_urls:
-            # Check if this URL already exists in database
-            normalized_url = normalize_url(article_url)
-            if Article.objects.filter(url=normalized_url).exists():
-                print(f"Skipping duplicate article: {article_url}")
+        for source_name in shuffled_sources:
+            source = get_source(source_name)
+
+            if not source:
+                print(f'Source "{source_name}" not available, trying next...')
                 continue
 
-            # This is a new article, fetch and extract it
-            print(f"Fetching new article: {article_url}")
-            html = source.fetch(article_url)
+            # Get article URLs from source
+            article_urls = source.search()
 
-            # Extract article data
-            article_data = source.extract(html)
+            if not article_urls:
+                print(f'No articles found from {source.name}, trying next source...')
+                continue
 
-            if article_data and article_data.get('title') and article_data.get('url'):
-                # Generate AI summary if content is available
-                if article_data.get('content'):
-                    ai_data = generate_summary(article_data['content'])
-                    if ai_data:
-                        article_data['summary'] = ai_data.get('summary')
-                        article_data['ai_title'] = ai_data.get('ai_title')
+            # Iterate through URLs and find first non-duplicate
+            for article_url in article_urls:
+                # Check if this URL already exists in database
+                normalized_url = normalize_url(article_url)
+                if Article.objects.filter(url=normalized_url).exists():
+                    print(f"Skipping duplicate article: {article_url}")
+                    continue
 
-                # Create the article
-                article_created = Article.objects.create(
-                    url=normalize_url(article_data['url']),
-                    title=article_data['title'],
-                    pub_date=article_data.get('pub_date') or timezone.now(),
-                    content=article_data.get('content', ''),
-                    summary=article_data.get('summary', ''),
-                    ai_title=article_data.get('ai_title', ''),
-                    image_url=article_data.get('image_url', ''),
-                    topics=article_data.get('topics', []),
-                    source=source_name
-                )
+                # This is a new article, fetch and extract it
+                print(f"Fetching new article: {article_url}")
+                html = source.fetch(article_url)
+
+                # Extract article data
+                article_data = source.extract(html)
+
+                if article_data and article_data.get('title') and article_data.get('url'):
+                    # Generate AI summary if content is available
+                    if article_data.get('content'):
+                        ai_data = generate_summary(article_data['content'])
+                        if ai_data:
+                            article_data['summary'] = ai_data.get('summary')
+                            article_data['ai_title'] = ai_data.get('ai_title')
+
+                    # Create the article
+                    article_created = Article.objects.create(
+                        url=normalize_url(article_data['url']),
+                        title=article_data['title'],
+                        pub_date=article_data.get('pub_date') or timezone.now(),
+                        content=article_data.get('content', ''),
+                        summary=article_data.get('summary', ''),
+                        ai_title=article_data.get('ai_title', ''),
+                        image_url=article_data.get('image_url', ''),
+                        topics=article_data.get('topics', []),
+                        source=source_name
+                    )
+                    break
+                else:
+                    print(f"Failed to extract data from: {article_url}")
+                    continue
+
+            # If we created an article, break out of the source loop
+            if article_created:
                 break
             else:
-                print(f"Failed to extract data from: {article_url}")
-                continue
+                print(f"All articles from {source_name} were duplicates, trying next source...")
 
         if not article_created:
-            return JsonResponse({'success': False, 'error': 'All articles found were already in the database'})
+            return JsonResponse({'success': False, 'error': 'All sources exhausted - no new articles found'})
 
         # Render the article HTML
         context_key = f'{category}_article'
