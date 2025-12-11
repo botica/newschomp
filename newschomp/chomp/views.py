@@ -74,6 +74,13 @@ def search_article(request):
                     article_data = source.extract(html)
 
                     if article_data and article_data.get('title') and article_data.get('url'):
+                        # Check if the canonical URL (from page) is also a duplicate
+                        # This handles cases where search URL differs from canonical URL
+                        canonical_url = normalize_url(article_data['url'])
+                        if Article.objects.filter(url=canonical_url).exists():
+                            print(f"Skipping duplicate article (canonical URL): {canonical_url}")
+                            continue
+
                         # Generate AI summary
                         if article_data.get('content'):
                             ai_data = generate_summary(article_data['content'])
@@ -154,6 +161,13 @@ def fetch_article_from_source(request, source_name):
             article_data = source.extract(html)
 
             if article_data and article_data.get('title') and article_data.get('url'):
+                # Check if the canonical URL (from page) is also a duplicate
+                # This handles cases where search URL differs from canonical URL
+                canonical_url = normalize_url(article_data['url'])
+                if Article.objects.filter(url=canonical_url).exists():
+                    print(f"Skipping duplicate article (canonical URL): {canonical_url}")
+                    continue
+
                 # Generate AI summary if content is available
                 if article_data.get('content'):
                     ai_data = generate_summary(article_data['content'])
@@ -244,6 +258,13 @@ def refresh_article(request, category):
                 article_data = source.extract(html)
 
                 if article_data and article_data.get('title') and article_data.get('url'):
+                    # Check if the canonical URL (from page) is also a duplicate
+                    # This handles cases where search URL differs from canonical URL
+                    canonical_url = normalize_url(article_data['url'])
+                    if Article.objects.filter(url=canonical_url).exists():
+                        print(f"Skipping duplicate article (canonical URL): {canonical_url}")
+                        continue
+
                     # Generate AI summary if content is available
                     if article_data.get('content'):
                         ai_data = generate_summary(article_data['content'])
