@@ -17,34 +17,33 @@ class APNewsSource(NewsSource):
     def source_key(self):
         return "apnews"
 
-    def search(self, query):
+    def search(self, query=None):
         """
-        Search AP News and get URLs of article results sorted by relevance.
+        Fetch AP News world news articles from the world news page.
         Skips non-article pages (videos, galleries, etc.)
 
         Args:
-            query: Search query string
+            query: Ignored, fetches from fixed world news URL
 
         Returns:
-            list: List of article URLs sorted by relevance, or empty list if not found
+            list: List of article URLs sorted by recency, or empty list if not found
         """
-        # Build search URL - s=0 sorts by relevance
-        encoded_query = urllib.parse.quote(query)
-        search_url = f"https://apnews.com/search?q={encoded_query}&s=0"
+        # Fetch world news page
+        world_news_url = "https://apnews.com/world-news"
 
-        print(f"Searching AP News: {search_url}")
+        print(f"Fetching AP News World News: {world_news_url}")
 
-        # Fetch search results page
-        response = requests.get(search_url)
+        # Fetch world news page
+        response = requests.get(world_news_url)
         response.raise_for_status()
 
-        # Parse search results
+        # Parse page
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Find all results with PagePromo-title
-        promo_titles = soup.find_all('div', class_='PagePromo-title')
+        # Find all results with PagePromo-title (can be h3 or div)
+        promo_titles = soup.find_all(class_='PagePromo-title')
         if not promo_titles:
-            print("No search results found")
+            print("No articles found")
             return []
 
         # Collect all valid article URLs
@@ -70,9 +69,9 @@ class APNewsSource(NewsSource):
                 print(f"Skipping non-article URL: {article_url}")
 
         if not article_urls:
-            print("No article URLs found in search results")
+            print("No article URLs found")
         else:
-            print(f"Found {len(article_urls)} article URLs sorted by relevance")
+            print(f"Found {len(article_urls)} article URLs")
 
         return article_urls
 

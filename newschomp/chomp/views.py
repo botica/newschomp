@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.utils import timezone
 from .models import Article
-from .forms import ArticleSearchForm
 from .utils import generate_summary
 from .sources import get_source
 from urllib.parse import urlparse, urlunparse, unquote
@@ -20,10 +19,8 @@ def normalize_url(url):
 
 def home(request):
     articles = Article.objects.all()  # Uses model's default ordering: -created_at
-    form = ArticleSearchForm()
     return render(request, 'chomp/home.html', {
-        'articles': articles,
-        'form': form
+        'articles': articles
     })
 
 

@@ -12,15 +12,17 @@
     </header>
 
     <div class="search-container">
-        <h2>search to make shomp</h2>
-        <form method="post" action="{% url 'search_article' %}" class="search-form">
-            {% csrf_token %}
-            {{ form.source }}
-            {{ form.query }}
-            <button type="submit" class="search-button">Search</button>
-        </form>
+        <h2>get some shomp</h2>
 
         <div class="alt-sources">
+            <form method="post" action="{% url 'fetch_article' 'apnews' %}" class="alt-source-form">
+                {% csrf_token %}
+                <button type="submit" class="search-button button-apnews">Get AP News Article</button>
+            </form>
+            <form method="post" action="{% url 'fetch_article' 'bbc' %}" class="alt-source-form">
+                {% csrf_token %}
+                <button type="submit" class="search-button button-bbc">Get BBC News Article</button>
+            </form>
             <p class="alt-sources-text">or</p>
             <form method="post" action="{% url 'fetch_article' 'doorcountypulse' %}" class="alt-source-form">
                 {% csrf_token %}

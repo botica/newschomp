@@ -45,38 +45,37 @@ class BBCSource(NewsSource):
 
         return html
 
-    def search(self, query):
+    def search(self, query=None):
         """
-        Search BBC News and get URLs of article results.
+        Fetch BBC World News articles from the world news page.
 
         Args:
-            query: Search query string
+            query: Ignored, fetches from fixed world news URL
 
         Returns:
-            list: List of article URLs, or empty list if not found
+            list: List of article URLs sorted by recency, or empty list if not found
         """
-        # Build search URL
-        encoded_query = urllib.parse.quote(query)
-        search_url = f"https://www.bbc.com/search?q={encoded_query}"
+        # Fetch world news page
+        world_news_url = "https://www.bbc.com/news/world"
 
-        print(f"Searching BBC News: {search_url}")
+        print(f"Fetching BBC World News: {world_news_url}")
 
-        # Fetch search results page with headers
+        # Fetch world news page with headers
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
         }
-        response = requests.get(search_url, headers=headers)
+        response = requests.get(world_news_url, headers=headers)
         response.raise_for_status()
 
-        # Parse search results
+        # Parse page
         soup = BeautifulSoup(response.text, 'html.parser')
 
         # Find all article divs with class "sc-225578b-0 ezQaGx"
         article_divs = soup.find_all('div', class_='sc-225578b-0 ezQaGx')
         if not article_divs:
-            print("No search results found")
+            print("No articles found")
             return []
 
         # Collect all valid article URLs
@@ -115,7 +114,7 @@ class BBCSource(NewsSource):
                 print(f"Skipping non-article URL: {article_url}")
 
         if not article_urls:
-            print("No article URLs found in search results")
+            print("No article URLs found")
         else:
             print(f"Found {len(article_urls)} article URLs")
 
