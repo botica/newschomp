@@ -8,7 +8,7 @@
 <body>
     <main class="feed">
         <section class="feed-section feed-world">
-            <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" class="refresh-btn" data-category="world">
+            <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" class="refresh-btn" data-category="world" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
             <div id="world-content">
             {% if world_article %}
                 <article class="article-card">
@@ -56,7 +56,7 @@
         </section>
 
         <section class="feed-section feed-color">
-            <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" class="refresh-btn" data-category="color">
+            <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" class="refresh-btn" data-category="color" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
             <div id="color-content">
             {% if color_article %}
                 <article class="article-card">
@@ -108,6 +108,26 @@
         document.addEventListener('DOMContentLoaded', function() {
             const refreshButtons = document.querySelectorAll('.refresh-btn');
 
+            // Animation helper - toggles between two frames
+            function startChompAnimation(img) {
+                const frame1 = img.dataset.frame1;
+                const frame2 = img.dataset.frame2;
+                let showingFrame1 = true;
+
+                img._animationInterval = setInterval(() => {
+                    showingFrame1 = !showingFrame1;
+                    img.src = showingFrame1 ? frame1 : frame2;
+                }, 250); // 250ms per frame = 2 frames per half second
+            }
+
+            function stopChompAnimation(img) {
+                if (img._animationInterval) {
+                    clearInterval(img._animationInterval);
+                    img._animationInterval = null;
+                }
+                img.src = img.dataset.frame1; // Reset to original frame
+            }
+
             refreshButtons.forEach(button => {
                 button.addEventListener('click', async function(e) {
                     e.preventDefault();
@@ -117,8 +137,9 @@
                     const category = this.getAttribute('data-category');
                     const contentDiv = document.getElementById(category + '-content');
 
-                    // Show loading state
+                    // Show loading state and start animation
                     this.classList.add('loading');
+                    startChompAnimation(this);
 
                     try {
                         const response = await fetch(`/refresh/${category}/`, {
@@ -141,7 +162,8 @@
                         console.error('Error:', error);
                         alert('Failed to fetch new article');
                     } finally {
-                        // Remove loading state
+                        // Stop animation and remove loading state
+                        stopChompAnimation(this);
                         this.classList.remove('loading');
                     }
                 });
