@@ -1,7 +1,7 @@
 /* NewsChomp Styles */
 
 :root {
-    --bg: #f8f6f3;
+    --bg: #dad8d5;
     --red: #c43c4c;
     --cream: #e8e2d9;
     --cream-light: #f5f2ed;
@@ -16,7 +16,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
     background: var(--bg);
     min-height: 100vh;
     padding: 20px 16px;
@@ -55,13 +55,14 @@ header {
 .refresh-btn {
     position: absolute;
     top: 50%;
-    right: -70px;
+    right: -120px;
     transform: translateY(-50%);
-    width: 50px;
+    width: 100px;
     height: auto;
     cursor: pointer;
-    background: var(--red);
-    padding: 8px;
+    background: #e29ea6;
+    padding: 16px;
+    border: 2px solid var(--red);
 }
 
 #world-content,
@@ -73,11 +74,11 @@ header {
 .article-card {
     background: var(--red);
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--red);
 }
 
 .article-title {
-    font-size: 18px;
+    font-size: 30px;
     font-weight: 600;
     line-height: 1.4;
     display: block;
@@ -90,7 +91,7 @@ header {
 
 .article-title a {
     color: var(--cream-light);
-    text-decoration: none;
+    text-decoration: underline;
     display: block;
     padding: 14px 16px 10px;
     text-align: justify;
@@ -118,7 +119,7 @@ header {
 
 .summary li {
     font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.6;
     color: var(--cream-light);
     margin-bottom: 10px;
@@ -156,7 +157,7 @@ header {
 }
 
 .source, .pub-date {
-    font-size: 12px;
+    font-size: 14px;
     color: var(--cream-light);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -174,7 +175,7 @@ header {
 }
 
 .topic {
-    font-size: 11px;
+    font-size: 13px;
     color: var(--red);
     background: var(--cream);
     padding: 4px 10px;
@@ -206,8 +207,8 @@ header {
     }
 
     .refresh-btn {
-        width: 40px;
-        right: -50px;
+        width: 80px;
+        right: -100px;
     }
 
     #world-content,
@@ -216,7 +217,7 @@ header {
     }
 
     .article-title {
-        font-size: 16px;
+        font-size: 22px;
     }
 
     .article-title a {
@@ -232,7 +233,7 @@ header {
     }
 
     .summary li {
-        font-size: 13px;
+        font-size: 15px;
     }
 
     .article-meta {
@@ -240,11 +241,11 @@ header {
     }
 
     .source, .pub-date {
-        font-size: 11px;
+        font-size: 13px;
     }
 
     .topic {
-        font-size: 10px;
+        font-size: 12px;
         padding: 3px 8px;
     }
 }
