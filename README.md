@@ -2,17 +2,8 @@
 
 news**CHOMP** is a django app that condenses news. llm inference is used for the article summaries - paired with my curation bias it's not a reliable source of current events. its more of a form of disposable news entertainment with the side effect of staying informed. there are minimal sources right now as i implement them one a time :)
 
-current sources:  
-*apnews*  
-*bbc*  
-*door county pulse*  
-*urban milwaukee*  
-*la taco*  
-*st. louis magazine*  
-*block club chicago*  
-*the gothamist*  
-*miami living*  
-*303 magazine*  
-*international examiner*  
-*gambit*  
-*reuters*  
+current sources:
+**world:** *apnews, bbc, reuters*
+**color:** *door county pulse, urban milwaukee, la taco, st. louis magazine, block club chicago, the gothamist, miami living, 303 magazine, international examiner, gambit*
+
+![screen-1.png](screen-1.png)
