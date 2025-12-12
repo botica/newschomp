@@ -41,14 +41,30 @@ header {
 .feed {
     display: flex;
     flex-direction: column;
-    gap: 40px;
+    gap: 120px;
     max-width: 600px;
     margin: 0 auto;
+    padding-top: 20px;
+    padding-bottom: 40px;
 }
 
 .feed-section {
     width: 100%;
     position: relative;
+}
+
+.feed-section:not(:last-child) {
+    padding-bottom: 120px;
+}
+
+.feed-section:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 25%;
+    right: 25%;
+    height: 2px;
+    background: var(--red);
 }
 
 /* Refresh Button */
@@ -60,9 +76,6 @@ header {
     width: 100px;
     height: auto;
     cursor: pointer;
-    background: #e29ea6;
-    padding: 16px;
-    border: 2px solid var(--red);
 }
 
 #world-content,
@@ -75,6 +88,7 @@ header {
     background: var(--red);
     overflow: hidden;
     border: 4px solid var(--red);
+    border-radius: 3px;
 }
 
 .article-title {
@@ -84,7 +98,7 @@ header {
     display: block;
     width: 100%;
     margin: 0;
-    padding: 2px;
+    padding: 4px;
     text-transform: lowercase;
     letter-spacing: 0.04em;
 }
@@ -98,10 +112,6 @@ header {
     white-space: nowrap;
 }
 
-.article-title a:hover {
-    color: var(--cream);
-}
-
 .article-image {
     width: 100%;
     height: auto;
@@ -112,7 +122,7 @@ header {
 /* Summary */
 .summary {
     list-style: none;
-    padding: 14px 18px;
+    padding: 18px 18px 14px 18px;
     background: var(--red);
     margin: 0;
 }
@@ -154,17 +164,14 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 10px;
 }
 
 .source, .pub-date {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--cream-light);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-}
-
-.source {
-    font-weight: 700;
 }
 
 .topics {
@@ -172,10 +179,11 @@ header {
     flex-wrap: wrap;
     gap: 6px;
     margin-top: 8px;
+    padding-bottom: 10px;
 }
 
 .topic {
-    font-size: 13px;
+    font-size: 15px;
     color: var(--red);
     background: var(--cream);
     padding: 4px 10px;

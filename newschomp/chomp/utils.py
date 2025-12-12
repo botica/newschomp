@@ -41,12 +41,12 @@ def generate_summary(content):
                 {
                     "role": "system",
                     "content": """You are a news article condenser.
-Summarize the article into 3 concise lines.
-Keep these lines as short as you can while still portraying the news accurately.
-Include specific details: people, places, things.  
-Express the main idea of the article in those three lines.
-Take the most interesting points made in the article and provide a comprehensive narrative for the reader. 
-Cut filler. Be direct and objective.
+Summarize the article into 3 SHORT, concise lines.
+Keep these lines as SMALL as you can while still portraying the news accurately.
+Include detail. 
+KEEP LINES TINY. 
+Express the main idea.
+Cut filler. Be objective. Make it MINIMAL. 
 Finally, provide a unique, 4 word title.
 Present the news as an original source. Do not reference 'the article' explicitly.
 
@@ -61,8 +61,8 @@ TITLE: <4 word title>
                     "content": f"Summarize this article:\n\n{llm_content}"
                 }
             ],
-            temperature=0.7,
-            max_completion_tokens=250
+            temperature=0.5,
+            max_completion_tokens=160
         )
 
         result = response.choices[0].message.content.strip()
