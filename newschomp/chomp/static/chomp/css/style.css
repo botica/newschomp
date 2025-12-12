@@ -112,37 +112,31 @@ header {
 /* Summary */
 .summary {
     list-style: none;
-    padding: 18px 18px 14px 18px;
+    padding: 18px;
     background: var(--red);
     margin: 0;
 }
 
 .summary li {
+    display: inline;
     font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
     font-size: 16px;
-    line-height: 1.6;
-    color: var(--cream-light);
-    margin-bottom: 10px;
-    padding-left: 16px;
-    position: relative;
+    line-height: 2.4;
+    color: var(--red);
+    background: white;
+    padding: 2px 6px;
     text-transform: uppercase;
     letter-spacing: 0.02em;
     font-weight: 500;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
 }
 
-.summary li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 8px;
-    width: 5px;
-    height: 5px;
-    background: var(--cream-light);
+.summary li::after {
+    content: '\A';
+    white-space: pre;
 }
 
-.summary li:last-child {
-    margin-bottom: 0;
-}
 
 /* Article Meta */
 .article-meta {
