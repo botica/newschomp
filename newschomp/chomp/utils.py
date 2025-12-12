@@ -35,18 +35,20 @@ def generate_summary(content):
 
         client = OpenAI(api_key=api_key)
 
-        response = client.chat.completions.create(
-            model="gpt-5.1",
-            messages=[
+        response = client.responses.create(
+            model="gpt-5.2",
+            reasoning={"effort": "high"},
+            text={"verbosity": "low"},
+            input=[
                 {
                     "role": "system",
                     "content": """You are a news article condenser.
 Summarize the article into 3 SHORT, concise lines.
 Keep these lines as SMALL as you can while still portraying the news accurately.
-Include detail. 
-KEEP LINES TINY. 
+Include details.
+KEEP LINES TINY.
 Express the main idea.
-Cut filler. Be objective. Make it MINIMAL. 
+Cut filler. Be objective. Make it MINIMAL.
 Finally, provide a unique, 4 word title.
 Present the news as an original source. Do not reference 'the article' explicitly.
 
@@ -60,12 +62,10 @@ TITLE: <4 word title>
                     "role": "user",
                     "content": f"Summarize this article:\n\n{llm_content}"
                 }
-            ],
-            temperature=0.5,
-            max_completion_tokens=160
+            ]
         )
 
-        result = response.choices[0].message.content.strip()
+        result = response.output_text.strip()
         print(f"LLM raw response: '{result}'")
 
         # Parse the result
@@ -121,33 +121,25 @@ def extract_topics_with_llm(content):
 
         client = OpenAI(api_key=api_key)
 
-        response = client.chat.completions.create(
-            model="gpt-5.1",
-            messages=[
+        response = client.responses.create(
+            model="gpt-5.2",
+            reasoning={"effort": "low"},
+            text={"verbosity": "low"},
+            input=[
                 {
                     "role": "system",
-                    "content": """You are a news article topic tagger.
-Extract 4-6 keyword tags that categorize this article for comparison with other articles.
-Tags should be REUSABLE - the same tag should appear across many different articles on similar subjects.
-Specific names are OK for: locations (Gaza, Chicago, Ukraine), major figures (Trump, Musk), organizations (NATO, FDA)
-But categories should be general: Natural Disaster, Weather, Humanitarian Aid, Tech Industry, Climate, Crime
-Bad tags: "Humanitarian crisis in Gaza", "Winter storm flooding" - these are too specific to reuse
-Avoid subjective or interpretive tags like: Nostalgia, Controversy, Tragedy, Hope, Irony
-Stick to factual, objective categories.
-Think: what tags would someone use to filter or group news articles?
-Keep tags to 1-2 words each.
-Return only the tags, one per line, no numbering or bullets."""
+                    "content": """Extract 3-4 topic tags from news articles.
+Tags should be reusable across articles: locations (Gaza, Chicago), figures (Trump, Musk), or general categories (Crime, Weather, Tech).
+1-2 words each. One per line. No bullets."""
                 },
                 {
                     "role": "user",
                     "content": f"Extract topics from this article:\n\n{llm_content}"
                 }
-            ],
-            temperature=0.3,
-            max_completion_tokens=100
+            ]
         )
 
-        result = response.choices[0].message.content.strip()
+        result = response.output_text.strip()
         print(f"LLM topic extraction result: {result}")
 
         # Parse topics from result (one per line)

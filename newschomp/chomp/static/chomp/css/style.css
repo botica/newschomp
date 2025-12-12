@@ -57,16 +57,6 @@ header {
     padding-bottom: 40px;
 }
 
-.feed-section:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 25%;
-    right: 25%;
-    height: 2px;
-    background: var(--red);
-}
-
 /* Refresh Button */
 .refresh-btn {
     position: absolute;
