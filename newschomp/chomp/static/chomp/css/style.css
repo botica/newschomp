@@ -19,7 +19,6 @@ body {
     font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
     background: var(--bg);
     min-height: 100vh;
-    min-width: 550px;
     padding: 20px 16px;
     color: var(--text-dark);
 }
@@ -60,13 +59,13 @@ header {
 
 /* Refresh Button */
 .refresh-btn {
-    position: absolute;
-    top: 50%;
-    right: -90px;
-    transform: translateY(-50%);
-    width: 67px;
+    display: block;
+    margin: 3px auto 0;
+    width: 50px;
     height: auto;
     cursor: pointer;
+    padding: 2px;
+    background: white;
 }
 
 #world-content,

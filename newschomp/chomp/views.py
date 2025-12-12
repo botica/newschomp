@@ -212,7 +212,8 @@ def refresh_article(request, category):
         # Render the article HTML
         context_key = f'{category}_article'
         html_content = render_to_string('chomp/article_partial.html', {
-            'article': article_created
+            'article': article_created,
+            'category': category
         })
 
         return JsonResponse({

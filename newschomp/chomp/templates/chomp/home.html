@@ -8,12 +8,12 @@
 <body>
     <main class="feed">
         <section class="feed-section feed-world">
-            <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" class="refresh-btn" data-category="world" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
             <div id="world-content">
             {% if world_article %}
                 <article class="article-card">
+                    <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="world" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
                     <h3 class="article-title">
-                        <a href="{{ world_article.url }}" target="_blank">
+                        <a href="{{ world_article.url }}" target="_blank" title="{{ world_article.url }}">
                             {% if world_article.ai_title %}
                                 {{ world_article.ai_title }}
                             {% else %}
@@ -56,12 +56,12 @@
         </section>
 
         <section class="feed-section feed-color">
-            <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" class="refresh-btn" data-category="color" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
             <div id="color-content">
             {% if color_article %}
                 <article class="article-card">
+                    <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="color" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
                     <h3 class="article-title">
-                        <a href="{{ color_article.url }}" target="_blank">
+                        <a href="{{ color_article.url }}" target="_blank" title="{{ color_article.url }}">
                             {% if color_article.ai_title %}
                                 {{ color_article.ai_title }}
                             {% else %}
@@ -106,8 +106,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const refreshButtons = document.querySelectorAll('.refresh-btn');
-
             // Animation helper - toggles between two frames
             function startChompAnimation(img) {
                 const frame1 = img.dataset.frame1;
@@ -128,45 +126,47 @@
                 img.src = img.dataset.frame1; // Reset to original frame
             }
 
-            refreshButtons.forEach(button => {
-                button.addEventListener('click', async function(e) {
-                    e.preventDefault();
+            // Use event delegation for dynamically loaded buttons
+            document.querySelector('.feed').addEventListener('click', async function(e) {
+                const button = e.target.closest('.refresh-btn');
+                if (!button) return;
 
-                    if (this.classList.contains('loading')) return;
+                e.preventDefault();
 
-                    const category = this.getAttribute('data-category');
-                    const contentDiv = document.getElementById(category + '-content');
+                if (button.classList.contains('loading')) return;
 
-                    // Show loading state and start animation
-                    this.classList.add('loading');
-                    startChompAnimation(this);
+                const category = button.getAttribute('data-category');
+                const contentDiv = document.getElementById(category + '-content');
 
-                    try {
-                        const response = await fetch(`/refresh/${category}/`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRFToken': getCookie('csrftoken'),
-                                'Content-Type': 'application/json',
-                            },
-                        });
+                // Show loading state and start animation
+                button.classList.add('loading');
+                startChompAnimation(button);
 
-                        const data = await response.json();
+                try {
+                    const response = await fetch(`/refresh/${category}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json',
+                        },
+                    });
 
-                        if (data.success) {
-                            // Update the content with the new article
-                            contentDiv.innerHTML = data.html;
-                        } else {
-                            alert(data.error || 'Failed to fetch new article');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        alert('Failed to fetch new article');
-                    } finally {
-                        // Stop animation and remove loading state
-                        stopChompAnimation(this);
-                        this.classList.remove('loading');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Update the content with the new article
+                        contentDiv.innerHTML = data.html;
+                    } else {
+                        alert(data.error || 'Failed to fetch new article');
                     }
-                });
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to fetch new article');
+                } finally {
+                    // Stop animation and remove loading state
+                    stopChompAnimation(button);
+                    button.classList.remove('loading');
+                }
             });
 
             // Helper function to get CSRF token

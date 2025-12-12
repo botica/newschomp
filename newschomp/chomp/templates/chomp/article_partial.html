@@ -1,7 +1,9 @@
+{% load static %}
 {% if article %}
     <article class="article-card">
+        <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
         <h3 class="article-title">
-            <a href="{{ article.url }}" target="_blank">
+            <a href="{{ article.url }}" target="_blank" title="{{ article.url }}">
                 {% if article.ai_title %}
                     {{ article.ai_title }}
                 {% else %}
