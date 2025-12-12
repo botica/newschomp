@@ -83,7 +83,7 @@ header {
 }
 
 .article-title {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 600;
     line-height: 1.2;
     margin: 0;
@@ -100,8 +100,7 @@ header {
     display: block;
     text-align: justify;
     text-align-last: justify;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
+    white-space: nowrap;
 }
 
 .article-image {
