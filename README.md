@@ -13,7 +13,7 @@ world:
 <em>reuters</em>
 <br>
 <br>
-local color:
+local:
 <br>
 <em>door county pulse</em><br>
 <em>urban milwaukee</em><br>
@@ -26,4 +26,4 @@ local color:
 <em>international examiner</em><br>
 <em>gambit</em><br>
 <br>
-<img src="newschomp/chomp/static/chomp/images/screen-1.png" alt="screen-1">
+<img src="newschomp/chomp/static/chomp/images/screen-2.png" alt="screenshot">
