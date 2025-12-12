@@ -84,22 +84,23 @@ header {
 .article-title {
     font-size: 28px;
     font-weight: 600;
-    line-height: 1.4;
-    display: block;
-    width: 100%;
+    line-height: 1.2;
     margin: 0;
-    padding: 4px;
+    padding: 6px;
     text-transform: lowercase;
     letter-spacing: 0.04em;
 }
 
 .article-title a {
-    color: var(--cream-light);
+    color: var(--red);
     text-decoration: underline;
+    background: white;
+    padding: 2px 6px;
     display: block;
     text-align: justify;
     text-align-last: justify;
-    white-space: nowrap;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
 }
 
 .article-image {
@@ -127,7 +128,7 @@ header {
     padding: 2px 6px;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    font-weight: 500;
+    font-weight: 100;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
 }
@@ -173,7 +174,7 @@ header {
     padding: 4px 10px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    font-weight: 600;
+    font-weight: 100;
 }
 
 /* Empty State */
