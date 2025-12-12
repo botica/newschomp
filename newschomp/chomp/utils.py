@@ -42,6 +42,7 @@ def generate_summary(content):
                     "role": "system",
                     "content": """You are a news article condenser.
 Summarize the article into 3 concise lines.
+Keep these lines as short as you can while still portraying the news accurately.
 Include specific details: people, places, things.  
 Express the main idea of the article in those three lines.
 Take the most interesting points made in the article and provide a comprehensive narrative for the reader. 
