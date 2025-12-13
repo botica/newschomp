@@ -23,20 +23,6 @@ body {
     color: var(--text-dark);
 }
 
-/* Header */
-header {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.header-logo {
-    width: 25px;
-    height: auto;
-    background: var(--red);
-    padding: 3px;
-}
-
 /* Feed Layout */
 .feed {
     display: flex;
