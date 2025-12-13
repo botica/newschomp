@@ -25,4 +25,4 @@ local:
 <em>international examiner</em><br>
 <em>gambit</em><br>
 <br>
-<img src="newschomp/chomp/static/chomp/images/screen-3.png" alt="screenshot">
+<img src="newschomp/chomp/static/chomp/images/screen-5.png" alt="screenshot">
