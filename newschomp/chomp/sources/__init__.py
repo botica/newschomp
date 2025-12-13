@@ -4,11 +4,9 @@ from .austinchronicle import AustinChronicleSource
 from .bbc import BBCSource
 from .doorcountypulse import DoorCountyPulseSource
 from .urbanmilwaukee import UrbanMilwaukeeSource
-from .lataco import LATacoSource
 from .stlmag import STLMagSource
 from .blockclubchicago import BlockClubChicagoSource
 from .gothamist import GothamistSource
-from .miamiliving import MiamiLivingSource
 from .magazine303 import Magazine303Source
 from .iexaminer import IExaminerSource
 from .gambit import GambitSource
@@ -22,11 +20,9 @@ NEWS_SOURCES = {
     'bbc': BBCSource,
     'doorcountypulse': DoorCountyPulseSource,
     'urbanmilwaukee': UrbanMilwaukeeSource,
-    'lataco': LATacoSource,
     'stlmag': STLMagSource,
     'blockclubchicago': BlockClubChicagoSource,
     'gothamist': GothamistSource,
-    'miamiliving': MiamiLivingSource,
     '303magazine': Magazine303Source,
     'iexaminer': IExaminerSource,
     'gambit': GambitSource,

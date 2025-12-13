@@ -179,6 +179,16 @@ class STLMagSource(NewsSource):
                 if para_text and len(para_text) > 20:
                     content_text.append(para_text)
                     print(f"Added paragraph: {para_text[:80]}...")
+
+            # If no paragraphs found, check for content in table cells (wp-block-table)
+            if not content_text:
+                table_cells = content_area.find_all('td')
+                print(f"Found {len(table_cells)} table cells in content area")
+                for cell in table_cells:
+                    cell_text = cell.get_text(separator=' ', strip=True)
+                    if cell_text and len(cell_text) > 20:
+                        content_text.append(cell_text)
+                        print(f"Added table cell: {cell_text[:80]}...")
         else:
             print("No content area found with class 'entry-content'")
 

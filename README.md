@@ -17,13 +17,12 @@ local:
 <br>
 <em>door county pulse</em><br>
 <em>urban milwaukee</em><br>
-<em>la taco</em><br>
 <em>st. louis magazine</em><br>
 <em>block club chicago</em><br>
 <em>the gothamist</em><br>
-<em>miami living</em><br>
+<em>slug mag</em><br>
 <em>303 magazine</em><br>
 <em>international examiner</em><br>
 <em>gambit</em><br>
 <br>
-<img src="newschomp/chomp/static/chomp/images/screen-2.png" alt="screenshot">
+<img src="newschomp/chomp/static/chomp/images/screen-3.png" alt="screenshot">
