@@ -110,7 +110,10 @@
             function startChompAnimation(img) {
                 const frame1 = img.dataset.frame1;
                 const frame2 = img.dataset.frame2;
-                let showingFrame1 = true;
+                let showingFrame1 = false;
+
+                // Immediately show frame2 to start animation without delay
+                img.src = frame2;
 
                 img._animationInterval = setInterval(() => {
                     showingFrame1 = !showingFrame1;
