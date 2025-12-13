@@ -22,7 +22,7 @@ def normalize_url(url):
 WORLD_SOURCES = ['apnews', 'bbc', 'reuters']
 COLOR_SOURCES = ['austinchronicle', 'doorcountypulse', 'urbanmilwaukee',
                  'stlmag', 'blockclubchicago', 'gothamist', '303magazine',
-                 'iexaminer', 'gambit', 'slugmag']
+                 'iexaminer', 'gambit', 'slugmag', 'folioweekly']
 
 
 def home(request):

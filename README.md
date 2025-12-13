@@ -20,9 +20,10 @@ local:
 <em>st. louis magazine</em><br>
 <em>block club chicago</em><br>
 <em>the gothamist</em><br>
-<em>slug mag</em><br>
 <em>303 magazine</em><br>
 <em>international examiner</em><br>
 <em>gambit</em><br>
+<em>slug mag</em><br>
+<em>folio weekly</em><br>
 <br>
 <img src="newschomp/chomp/static/chomp/images/screen-5.png" alt="screenshot">
