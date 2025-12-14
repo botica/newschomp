@@ -3,8 +3,8 @@
 :root {
     --bg: #deccce;
     --red: #e6455a;
-    --cream: #deccce;
-    --cream-light: #FFF0F1; /* really like almost white for the text background*/
+    --cream: #ffc6ca;
+    --cream-light: #fff6f7; /* really like almost white for the text background*/
     --text-dark: #e6455a;
     --text-light: #e3a1aa;
 }
@@ -17,7 +17,7 @@
 
 body {
     font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
-    background: var(--bg);
+    background: var(--cream);
     min-height: 100vh;
     padding: 20px 16px;
     color: var(--text-dark);
@@ -69,7 +69,7 @@ body {
 }
 
 .article-title {
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 600;
     line-height: 1.2;
     margin: 0;
@@ -81,12 +81,22 @@ body {
 .article-title a {
     color: var(--red);
     text-decoration: underline;
-    background: var(--cream-light);
+    text-decoration-thickness: 2px;
     padding: 0px 2px;
     display: block;
     text-align: justify;
     text-align-last: justify;
     overflow-wrap: break-word;
+    line-height: 2;
+    background: repeating-linear-gradient(
+        to bottom,
+        var(--cream-light) 0,
+        var(--cream-light) 1.7em,
+        var(--red) 1.7em,
+        var(--red) 2em
+    );
+    background-size: 100% 2em;
+    background-position: 0 0.15em;
 }
 
 .article-image {
@@ -107,7 +117,7 @@ body {
 .summary li { /* this is the text article summary part that we need to style in order to make it readable */
     display: inline;
     font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
-    font-size: 18px;
+    font-size: 15px;
     line-height: 2.0;
     color: var(--red);
     background: var(--cream-light);
@@ -139,7 +149,7 @@ body {
 }
 
 .source, .pub-date {
-    font-size: 16px;
+    font-size: 14px;
     color: var(--cream-light);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -155,9 +165,9 @@ body {
 }
 
 .topic {
-    font-size: 16px;
+    font-size: 14px;
     color: var(--red);
-    background: var(--cream-light);
+    background: var(--cream);
     padding: 4px 10px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
