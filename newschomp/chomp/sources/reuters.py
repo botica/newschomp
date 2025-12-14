@@ -125,10 +125,14 @@ class ReutersSource(NewsSource):
                             article_urls.append(href)
 
                 # Remove duplicates while preserving order
+                # Skip live blog articles which have a different page structure.
+                # Using '-live-' to catch slugs like "verdict-live-hong-kong".
+                # This may filter out some regular articles with "live" in the title
+                # but that's acceptable for world news.
                 seen = set()
                 unique_urls = []
                 for url in article_urls:
-                    if url not in seen:
+                    if url not in seen and '-live-' not in url:
                         seen.add(url)
                         unique_urls.append(url)
 
