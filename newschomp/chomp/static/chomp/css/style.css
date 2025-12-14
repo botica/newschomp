@@ -69,7 +69,7 @@ body {
 }
 
 .article-title {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 600;
     line-height: 1.2;
     margin: 0;
@@ -91,8 +91,8 @@ body {
     background: repeating-linear-gradient(
         to bottom,
         var(--cream-light) 0,
-        var(--cream-light) 1.7em,
-        var(--red) 1.7em,
+        var(--cream-light) 1.55em,
+        var(--red) 1.55em,
         var(--red) 2em
     );
     background-size: 100% 2em;
@@ -117,7 +117,7 @@ body {
 .summary li { /* this is the text article summary part that we need to style in order to make it readable */
     display: inline;
     font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
-    font-size: 15px;
+    font-size: 17px;
     line-height: 2.0;
     color: var(--red);
     background: var(--cream-light);
@@ -149,7 +149,7 @@ body {
 }
 
 .source, .pub-date {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--cream-light);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -165,7 +165,7 @@ body {
 }
 
 .topic {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--red);
     background: var(--cream);
     padding: 4px 10px;
@@ -184,5 +184,24 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-weight: 500;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .article-title {
+        font-size: 20px;
+    }
+
+    .summary li {
+        font-size: 15px;
+    }
+
+    .source, .pub-date {
+        font-size: 14px;
+    }
+
+    .topic {
+        font-size: 14px;
+    }
 }
 
