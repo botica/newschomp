@@ -69,11 +69,11 @@ body {
 }
 
 .article-title {
-    font-size: 30px;
+    font-size: 22px;
     font-weight: 600;
     line-height: 1.2;
     margin: 0;
-    padding: 6px 12px 12px;
+    padding: 6px 4px 12px;
     text-transform: lowercase;
     letter-spacing: 0.04em;
 }

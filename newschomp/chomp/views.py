@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.views.decorators.csrf import ensure_csrf_cookie
 from .models import Article
 from .utils import generate_summary
 from .sources import get_source
@@ -25,6 +26,7 @@ COLOR_SOURCES = ['austinchronicle', 'doorcountypulse', 'urbanmilwaukee',
                  'iexaminer', 'gambit', 'slugmag', 'folioweekly']
 
 
+@ensure_csrf_cookie
 def home(request):
     world_article = Article.objects.filter(source__in=WORLD_SOURCES).first()
     color_article = Article.objects.filter(source__in=COLOR_SOURCES).first()
