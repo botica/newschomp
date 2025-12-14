@@ -107,6 +107,40 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Mobile title formatting - 2 words per line, justified left/right
+            function formatMobileTitles() {
+                if (window.innerWidth > 480) return;
+
+                document.querySelectorAll('.article-title a').forEach(link => {
+                    // Skip if already formatted
+                    if (link.dataset.formatted) return;
+
+                    const text = link.textContent.trim();
+                    const words = text.split(/\s+/);
+
+                    // Group words into pairs, each word in its own span
+                    const lines = [];
+                    for (let i = 0; i < words.length; i += 2) {
+                        const word1 = words[i];
+                        const word2 = words[i + 1];
+                        if (word2) {
+                            lines.push(`<span class="title-line"><span class="title-word">${word1}</span><span class="title-word">${word2}</span></span>`);
+                        } else {
+                            lines.push(`<span class="title-line"><span class="title-word">${word1}</span></span>`);
+                        }
+                    }
+
+                    link.innerHTML = lines.join('');
+                    link.dataset.formatted = 'true';
+                });
+            }
+
+            // Run on load
+            formatMobileTitles();
+
+            // Re-run on resize (in case orientation changes)
+            window.addEventListener('resize', formatMobileTitles);
+
             // Animation helper - toggles between two frames
             function startChompAnimation(img) {
                 const frame1 = img.dataset.frame1;
@@ -160,6 +194,8 @@
                     if (data.success) {
                         // Update the content with the new article
                         contentDiv.innerHTML = data.html;
+                        // Re-format titles for mobile
+                        formatMobileTitles();
                     } else {
                         alert(data.error || 'Failed to fetch new article');
                     }

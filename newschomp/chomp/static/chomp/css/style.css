@@ -69,7 +69,7 @@ body {
 }
 
 .article-title {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 600;
     line-height: 1.2;
     margin: 0;
@@ -189,7 +189,39 @@ body {
 /* Mobile */
 @media (max-width: 480px) {
     .article-title {
-        font-size: 20px;
+        font-size: 24px;
+    }
+
+    .article-title a {
+        text-align: left;
+        text-align-last: left;
+        background: none;
+        padding: 8px 0;
+        text-decoration: none;
+    }
+
+    .title-line {
+        display: flex;
+        justify-content: space-between;
+        background: var(--cream-light);
+        padding: 1px 4px;
+        margin: 0 12px 12px;
+        position: relative;
+        line-height: 1.2;
+    }
+
+    .title-line::after {
+        content: '';
+        position: absolute;
+        bottom: 3px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--red);
+    }
+
+    .title-line:last-child {
+        margin-bottom: 0;
     }
 
     .summary li {
