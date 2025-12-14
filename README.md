@@ -28,6 +28,6 @@ local:
 <br>
 screenshots:
 <br>
-<img src="newschomp/chomp/static/chomp/images/mobile-screen1.png" alt="mobile screener">
+<img src="newschomp/chomp/static/chomp/images/mobile-screen1.png" alt="mobile screener" width="500px">
 <br>
-<img src="newschomp/chomp/static/chomp/images/mobile-screen2.png" alt="screen 2">
+<img src="newschomp/chomp/static/chomp/images/mobile-screen2.png" alt="screen 2" width="500px">
