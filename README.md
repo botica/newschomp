@@ -26,4 +26,8 @@ local:
 <em>slug mag</em><br>
 <em>folio weekly</em><br>
 <br>
-<img src="newschomp/chomp/static/chomp/images/screen-5.png" alt="screenshot">
+screenshots:
+<br>
+<img src="newschomp/chomp/static/chomp/images/mobile-screen1.png" alt="mobile screener">
+<br>
+<img src="newschomp/chomp/static/chomp/images/mobile-screen2.png" alt="screen 2">
