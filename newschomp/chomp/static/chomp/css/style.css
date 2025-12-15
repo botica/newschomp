@@ -43,6 +43,15 @@ body {
     padding-bottom: 40px;
 }
 
+/* Button Row - contains refresh button and local chomp button */
+.button-row {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px auto;
+}
+
 /* Refresh Button */
 .refresh-btn {
     display: block;
@@ -53,6 +62,31 @@ body {
     padding: 2px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+}
+
+.button-row .refresh-btn {
+    margin: 0;
+}
+
+/* Local Chomp Button */
+.local-chomp-btn {
+    position: absolute;
+    left: calc(50% + 50px);
+    font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-decoration: underline;
+    background: var(--cream-light);
+    color: var(--red);
+    border: 3px solid var(--red);
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.local-chomp-btn:disabled {
+    cursor: not-allowed;
 }
 
 #world-content,

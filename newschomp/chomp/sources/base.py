@@ -20,6 +20,21 @@ class NewsSource(ABC):
         """Return the unique key identifier for this source"""
         pass
 
+    @property
+    def latitude(self):
+        """Return the latitude of the news source's location (optional)"""
+        return None
+
+    @property
+    def longitude(self):
+        """Return the longitude of the news source's location (optional)"""
+        return None
+
+    @property
+    def city(self):
+        """Return the city name of the news source (optional)"""
+        return None
+
     @abstractmethod
     def search(self, query):
         """

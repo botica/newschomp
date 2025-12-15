@@ -46,3 +46,74 @@ def get_source(source_name):
     if source_class:
         return source_class()
     return None
+
+
+# Local sources with location data
+LOCAL_SOURCES = [
+    'austinchronicle', 'doorcountypulse', 'urbanmilwaukee', 'stlmag',
+    'blockclubchicago', 'gothamist', '303magazine', 'iexaminer',
+    'gambit', 'slugmag', 'folioweekly'
+]
+
+
+def get_local_sources_with_locations():
+    """
+    Get all local news sources with their location data.
+
+    Returns:
+        list: List of dicts with source_key, name, latitude, longitude, city
+    """
+    sources = []
+    for source_key in LOCAL_SOURCES:
+        source = get_source(source_key)
+        if source and source.latitude and source.longitude:
+            sources.append({
+                'source_key': source.source_key,
+                'name': source.name,
+                'latitude': source.latitude,
+                'longitude': source.longitude,
+                'city': source.city,
+            })
+    return sources
+
+
+def find_nearest_source(user_lat, user_lng):
+    """
+    Find the nearest local news source to the user's location.
+
+    Args:
+        user_lat: User's latitude
+        user_lng: User's longitude
+
+    Returns:
+        dict: Source info with distance, or None if no sources available
+    """
+    import math
+
+    def haversine_distance(lat1, lon1, lat2, lon2):
+        """Calculate distance between two points in km using Haversine formula."""
+        R = 6371  # Earth's radius in km
+        lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        c = 2 * math.asin(math.sqrt(a))
+        return R * c
+
+    sources = get_local_sources_with_locations()
+    if not sources:
+        return None
+
+    nearest = None
+    min_distance = float('inf')
+
+    for source in sources:
+        distance = haversine_distance(
+            user_lat, user_lng,
+            source['latitude'], source['longitude']
+        )
+        if distance < min_distance:
+            min_distance = distance
+            nearest = {**source, 'distance_km': round(distance, 2)}
+
+    return nearest

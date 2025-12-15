@@ -24,6 +24,18 @@ class DoorCountyPulseSource(NewsSource):
     def source_key(self):
         return "doorcountypulse"
 
+    @property
+    def latitude(self):
+        return 45.0073
+
+    @property
+    def longitude(self):
+        return -87.1506
+
+    @property
+    def city(self):
+        return "Door County, WI"
+
     def search(self, query=None):
         """
         Get article URLs from category pages.

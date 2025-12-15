@@ -63,7 +63,10 @@
             <div id="color-content">
             {% if color_article %}
                 <article class="article-card">
-                    <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="color" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
+                    <div class="button-row">
+                        <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="color" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
+                        <button class="local-chomp-btn">gen. local chomp!</button>
+                    </div>
                     <h3 class="article-title">
                         <a href="{{ color_article.url }}" target="_blank" title="{{ color_article.url }}">
                             {% if color_article.ai_title %}
@@ -175,6 +178,108 @@
 
             // Use event delegation for dynamically loaded buttons
             document.querySelector('.feed').addEventListener('click', async function(e) {
+                // Handle local chomp button clicks
+                const localChompBtn = e.target.closest('.local-chomp-btn');
+                if (localChompBtn) {
+                    console.log('getting locational');
+
+                    // Prevent double-clicks
+                    if (localChompBtn.disabled) return;
+
+                    // Get the mouth button in the same button-row for animation
+                    const buttonRow = localChompBtn.closest('.button-row');
+                    const mouthBtn = buttonRow ? buttonRow.querySelector('.refresh-btn') : null;
+                    const contentDiv = document.getElementById('color-content');
+
+                    // Request geolocation permission
+                    if (!navigator.geolocation) {
+                        console.log('Geolocation not supported by browser');
+                        alert('Geolocation is not supported by your browser');
+                        return;
+                    }
+
+                    // Disable button and start animation
+                    localChompBtn.disabled = true;
+                    if (mouthBtn) {
+                        mouthBtn.classList.add('loading');
+                        startChompAnimation(mouthBtn);
+                    }
+
+                    navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                            const { latitude, longitude } = position.coords;
+                            console.log(`User location: ${latitude}, ${longitude}`);
+
+                            try {
+                                // Find nearest source
+                                const nearestResponse = await fetch('/nearest-source/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRFToken': getCookie('csrftoken'),
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ latitude, longitude })
+                                });
+
+                                const nearestData = await nearestResponse.json();
+                                if (!nearestData.success) {
+                                    throw new Error(nearestData.error || 'Failed to find nearest source');
+                                }
+
+                                console.log(`Nearest source: ${nearestData.source.name} (${nearestData.source.city}) - ${nearestData.source.distance_km} km away`);
+
+                                // Fetch article from that source
+                                const fetchResponse = await fetch(`/fetch-local/${nearestData.source.source_key}/`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRFToken': getCookie('csrftoken'),
+                                        'Content-Type': 'application/json',
+                                    },
+                                });
+
+                                const fetchData = await fetchResponse.json();
+                                if (fetchData.success) {
+                                    // Update the content with the new article
+                                    contentDiv.innerHTML = fetchData.html;
+                                    // Re-format titles for mobile
+                                    formatMobileTitles();
+                                    console.log(`Loaded article from ${fetchData.source_name} (${fetchData.source_city})`);
+                                } else {
+                                    alert(fetchData.error || 'Failed to fetch article from nearest source');
+                                }
+                            } catch (error) {
+                                console.error('Error:', error);
+                                alert('Failed to fetch local article: ' + error.message);
+                            } finally {
+                                // Stop animation and re-enable button
+                                // Need to get the new mouth button since DOM was replaced
+                                const newButtonRow = contentDiv.querySelector('.button-row');
+                                const newMouthBtn = newButtonRow ? newButtonRow.querySelector('.refresh-btn') : null;
+                                const newLocalBtn = newButtonRow ? newButtonRow.querySelector('.local-chomp-btn') : null;
+
+                                if (newMouthBtn) {
+                                    stopChompAnimation(newMouthBtn);
+                                    newMouthBtn.classList.remove('loading');
+                                }
+                                if (newLocalBtn) {
+                                    newLocalBtn.disabled = false;
+                                }
+                            }
+                        },
+                        (error) => {
+                            console.log('Geolocation error:', error.message);
+                            alert('Unable to get your location: ' + error.message);
+                            // Stop animation and re-enable button
+                            if (mouthBtn) {
+                                stopChompAnimation(mouthBtn);
+                                mouthBtn.classList.remove('loading');
+                            }
+                            localChompBtn.disabled = false;
+                        }
+                    );
+                    return;
+                }
+
                 const button = e.target.closest('.refresh-btn');
                 if (!button) return;
 

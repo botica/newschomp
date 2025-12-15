@@ -24,6 +24,18 @@ class GambitSource(NewsSource):
     def source_key(self):
         return "gambit"
 
+    @property
+    def latitude(self):
+        return 29.9511
+
+    @property
+    def longitude(self):
+        return -90.0715
+
+    @property
+    def city(self):
+        return "New Orleans, LA"
+
     def fetch(self, url):
         """
         Fetch HTML content from a URL using Playwright for JavaScript rendering.

@@ -20,6 +20,18 @@ class GothamistSource(NewsSource):
     def source_key(self):
         return "gothamist"
 
+    @property
+    def latitude(self):
+        return 40.7128
+
+    @property
+    def longitude(self):
+        return -74.0060
+
+    @property
+    def city(self):
+        return "New York, NY"
+
     def search(self, query=None):
         """
         Get article URLs from The Gothamist Arts & Entertainment section.

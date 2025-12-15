@@ -1,7 +1,14 @@
 {% load static %}
 {% if article %}
     <article class="article-card">
-        <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
+        {% if category == 'color' %}
+            <div class="button-row">
+                <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
+                <button class="local-chomp-btn">gen. local chomp!</button>
+            </div>
+        {% else %}
+            <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
+        {% endif %}
         <h3 class="article-title">
             <a href="{{ article.url }}" target="_blank" title="{{ article.url }}">
                 {% if article.ai_title %}

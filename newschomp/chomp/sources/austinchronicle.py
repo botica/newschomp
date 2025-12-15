@@ -25,6 +25,18 @@ class AustinChronicleSource(NewsSource):
     def source_key(self):
         return "austinchronicle"
 
+    @property
+    def latitude(self):
+        return 30.2672
+
+    @property
+    def longitude(self):
+        return -97.7431
+
+    @property
+    def city(self):
+        return "Austin, TX"
+
     def fetch(self, url):
         """
         Fetch HTML content from a URL with User-Agent header.

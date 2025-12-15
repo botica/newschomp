@@ -24,6 +24,18 @@ class STLMagSource(NewsSource):
     def source_key(self):
         return "stlmag"
 
+    @property
+    def latitude(self):
+        return 38.6270
+
+    @property
+    def longitude(self):
+        return -90.1994
+
+    @property
+    def city(self):
+        return "St. Louis, MO"
+
     def fetch(self, url):
         """
         Fetch HTML content from a URL with User-Agent header.

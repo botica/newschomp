@@ -21,6 +21,18 @@ class BlockClubChicagoSource(NewsSource):
     def source_key(self):
         return "blockclubchicago"
 
+    @property
+    def latitude(self):
+        return 41.8781
+
+    @property
+    def longitude(self):
+        return -87.6298
+
+    @property
+    def city(self):
+        return "Chicago, IL"
+
     def search(self, query=None):
         """
         Get article URLs from category pages.

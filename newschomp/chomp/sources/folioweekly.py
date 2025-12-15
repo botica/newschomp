@@ -22,6 +22,18 @@ class FolioWeeklySource(NewsSource):
     def source_key(self):
         return "folioweekly"
 
+    @property
+    def latitude(self):
+        return 30.3322
+
+    @property
+    def longitude(self):
+        return -81.6557
+
+    @property
+    def city(self):
+        return "Jacksonville, FL"
+
     def fetch(self, url):
         """
         Fetch HTML content from a URL using Playwright for JavaScript rendering.

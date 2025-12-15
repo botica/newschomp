@@ -37,7 +37,7 @@ def generate_summary(content):
 
         response = client.responses.create(
             model="gpt-5.2",
-            reasoning={"effort": "high"},
+            reasoning={"effort": "medium"},
             text={"verbosity": "low"},
             input=[
                 {

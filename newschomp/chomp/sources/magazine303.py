@@ -15,6 +15,18 @@ class Magazine303Source(NewsSource):
     def source_key(self):
         return "303magazine"
 
+    @property
+    def latitude(self):
+        return 39.7392
+
+    @property
+    def longitude(self):
+        return -104.9903
+
+    @property
+    def city(self):
+        return "Denver, CO"
+
     def fetch(self, url):
         """
         Fetch HTML content from a URL with User-Agent header.

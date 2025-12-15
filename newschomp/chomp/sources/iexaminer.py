@@ -21,6 +21,18 @@ class IExaminerSource(NewsSource):
     def source_key(self):
         return "iexaminer"
 
+    @property
+    def latitude(self):
+        return 47.6062
+
+    @property
+    def longitude(self):
+        return -122.3321
+
+    @property
+    def city(self):
+        return "Seattle, WA"
+
     def fetch(self, url):
         """
         Fetch HTML content from a URL using Playwright for JavaScript rendering.

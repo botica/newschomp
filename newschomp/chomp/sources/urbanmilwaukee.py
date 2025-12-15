@@ -23,6 +23,18 @@ class UrbanMilwaukeeSource(NewsSource):
     def source_key(self):
         return "urbanmilwaukee"
 
+    @property
+    def latitude(self):
+        return 43.0389
+
+    @property
+    def longitude(self):
+        return -87.9065
+
+    @property
+    def city(self):
+        return "Milwaukee, WI"
+
     def search(self, query=None):
         """
         Get article URLs from category pages.
