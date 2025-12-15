@@ -267,8 +267,26 @@
                             }
                         },
                         (error) => {
-                            console.log('Geolocation error:', error.message);
-                            alert('Unable to get your location: ' + error.message);
+                            console.log('Geolocation error:', error.code, error.message);
+                            let errorMsg;
+                            switch (error.code) {
+                                case 1: // PERMISSION_DENIED
+                                    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+                                        errorMsg = 'Location requires HTTPS. Please access the site via https://';
+                                    } else {
+                                        errorMsg = 'Location permission denied. Please enable location access in your browser settings and reload the page.';
+                                    }
+                                    break;
+                                case 2: // POSITION_UNAVAILABLE
+                                    errorMsg = 'Location unavailable. Please check that location services are enabled on your device.';
+                                    break;
+                                case 3: // TIMEOUT
+                                    errorMsg = 'Location request timed out. Please try again.';
+                                    break;
+                                default:
+                                    errorMsg = 'Unable to get your location: ' + error.message;
+                            }
+                            alert(errorMsg);
                             // Stop animation and re-enable button
                             if (mouthBtn) {
                                 stopChompAnimation(mouthBtn);

@@ -27,6 +27,7 @@ DEBUG = True
 
 #remove before deply
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://*.loca.lt']
 
 
 # Application definition
