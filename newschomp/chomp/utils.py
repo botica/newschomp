@@ -123,14 +123,14 @@ def extract_topics_with_llm(content):
 
         response = client.responses.create(
             model="gpt-5.2",
-            reasoning={"effort": "low"},
+            reasoning={"effort": "medium"},
             text={"verbosity": "low"},
             input=[
                 {
                     "role": "system",
-                    "content": """Extract 3-4 topic tags from news articles.
+                    "content": """Extract 3 or 4 topic tags from news articles.
 Tags should be reusable across articles: locations (Gaza, Chicago), figures (Trump, Musk), or general categories (Crime, Weather, Tech).
-1-2 words each. One per line. No bullets."""
+1 word each, maybe 2. One per line. No bullets."""
                 },
                 {
                     "role": "user",

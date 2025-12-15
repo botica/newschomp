@@ -176,7 +176,7 @@ body {
 
 /* Empty State */
 .empty-state {
-    padding: 40px 16px;
+    padding: 8px 16px 40px;
     text-align: center;
     color: var(--cream-light);
     font-size: 14px;

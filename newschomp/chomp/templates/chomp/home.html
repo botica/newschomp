@@ -51,7 +51,10 @@
                     </div>
                 </article>
             {% else %}
-                <div class="empty-state">No world news yet</div>
+                <div class="empty-state">
+                    <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="world" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
+                    No world news yet
+                </div>
             {% endif %}
             </div>
         </section>
@@ -99,7 +102,10 @@
                     </div>
                 </article>
             {% else %}
-                <div class="empty-state">No local color yet</div>
+                <div class="empty-state">
+                    <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="color" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
+                    No local color yet
+                </div>
             {% endif %}
             </div>
         </section>
@@ -116,7 +122,10 @@
                     if (link.dataset.formatted) return;
 
                     const text = link.textContent.trim();
-                    const words = text.split(/\s+/);
+                    // Split on whitespace, then split hyphenated words (keeping hyphen with first part)
+                    const words = text.split(/\s+/).flatMap(word =>
+                        word.split(/(?<=-)/)
+                    );
 
                     // Group words into pairs, each word in its own span
                     const lines = [];
