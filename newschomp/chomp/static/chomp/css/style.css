@@ -19,7 +19,7 @@ body {
     font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
     background: var(--cream);
     min-height: 100vh;
-    padding: 20px 16px;
+    padding: 10px 16px;
     color: var(--text-dark);
 }
 
@@ -30,8 +30,8 @@ body {
     gap: 40px;
     max-width: 600px;
     margin: 0 auto;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .feed-section {
@@ -40,7 +40,15 @@ body {
 }
 
 .feed-section:not(:last-child) {
-    padding-bottom: 40px;
+    padding-bottom: 0;
+}
+
+/* Section Separator */
+.section-separator {
+    text-align: center;
+    color: var(--red);
+    font-size: 24px;
+    letter-spacing: 0.2em;
 }
 
 /* Button Row - contains refresh button and local chomp button */
@@ -49,14 +57,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 10px auto;
+    margin: 4px auto;
 }
 
 /* Refresh Button */
 .refresh-btn {
     display: block;
-    margin: 10px auto;
-    width: 80px;
+    margin: 4px auto;
+    width: 60px;
     height: auto;
     cursor: pointer;
     padding: 2px;
@@ -73,15 +81,15 @@ body {
     position: absolute;
     left: calc(50% + 50px);
     font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     text-decoration: underline;
     background: var(--cream-light);
     color: var(--red);
-    border: 3px solid var(--red);
-    padding: 8px 12px;
+    padding: 0px;
+    border: 0px;
     cursor: pointer;
 }
 
@@ -103,11 +111,11 @@ body {
 }
 
 .article-title {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 600;
     line-height: 1.2;
     margin: 0;
-    padding: 6px 4px 12px;
+    padding: 0 16px;
     text-transform: lowercase;
     letter-spacing: 0.04em;
 }
@@ -143,7 +151,7 @@ body {
 /* Summary */
 .summary {
     list-style: none;
-    padding: 18px;
+    padding: 6px 18px 0;
     background: var(--red);
     margin: 0;
 }
@@ -195,7 +203,7 @@ body {
     flex-wrap: wrap;
     gap: 6px;
     margin-top: 8px;
-    padding-bottom: 10px;
+    padding-bottom: 0;
 }
 
 .topic {

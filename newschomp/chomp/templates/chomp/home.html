@@ -59,13 +59,15 @@
             </div>
         </section>
 
+        <div class="section-separator">---</div>
+
         <section class="feed-section feed-color">
             <div id="color-content">
             {% if color_article %}
                 <article class="article-card">
                     <div class="button-row">
                         <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="color" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
-                        <button class="local-chomp-btn">gen. local chomp!</button>
+                        <button class="local-chomp-btn" title="generate a chomp local to you!">+loc.chmp</button>
                     </div>
                     <h3 class="article-title">
                         <a href="{{ color_article.url }}" target="_blank" title="{{ color_article.url }}">
