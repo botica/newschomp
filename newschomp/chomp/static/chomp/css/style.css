@@ -82,7 +82,7 @@ body {
     position: absolute;
     left: calc(50% + 30px);
     font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -164,6 +164,9 @@ ul {
     padding: 0px 0 0;
     background: var(--red);
     margin: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
     width: 100%;
 }
 
@@ -174,7 +177,8 @@ ul {
     line-height: 1.8;
     color: var(--red);
     background: var(--cream-light);
-    padding: 0px 0px;
+    padding-left: 3px;
+    padding-right: 3px; /* left and right space gives the white background a bit of room on the horizontel edges*/
     margin: 0;
     text-transform: uppercase;
     letter-spacing: 0.02em;
