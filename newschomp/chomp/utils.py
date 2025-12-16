@@ -49,11 +49,11 @@ Include details.
 KEEP LINES TINY.
 Express the main idea.
 Cut filler. Be objective. Make it MINIMAL.
-Finally, provide a unique, 4 word title.
+Finally, provide a unique title that is EXACTLY 4 words.
 Present the news as an original source. Do not reference 'the article' explicitly.
 
 Output format:
-TITLE: <4 word title>
+TITLE: <exactly 4 words>
 <summary line 1>
 <summary line 2>
 <summary line 3>"""

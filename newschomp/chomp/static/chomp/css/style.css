@@ -57,7 +57,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 4px auto -2px;
+    margin: 0;
 }
 
 /* Refresh Button */
@@ -74,7 +74,7 @@ body {
 }
 
 .button-row .refresh-btn {
-    margin: 0;
+    margin: 4px auto 2px;
 }
 
 /* Local Chomp Button */
@@ -115,9 +115,9 @@ body {
 .article-title {
     font-size: 22px;
     font-weight: 600;
-    line-height: 1.2;
-    margin: 2px 6px;
-    padding: 0;
+    line-height: 1;
+    margin: 0px 6px;
+    padding-bottom: 4px;
     text-transform: lowercase;
     letter-spacing: 0.04em;
 }
@@ -131,7 +131,7 @@ body {
     text-align: justify;
     text-align-last: justify;
     overflow-wrap: break-word;
-    line-height: 2;
+    line-height: 1.4;
     background: repeating-linear-gradient(
         to bottom,
         var(--cream-light) 0,
