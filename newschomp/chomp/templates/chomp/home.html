@@ -120,32 +120,45 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Mobile title formatting - 2 words per line, justified left/right
             function formatMobileTitles() {
-                if (window.innerWidth > 480) return;
+                const isMobile = window.innerWidth <= 480;
 
                 document.querySelectorAll('.article-title a').forEach(link => {
-                    // Skip if already formatted
-                    if (link.dataset.formatted) return;
+                    if (isMobile) {
+                        // Skip if already formatted for mobile
+                        if (link.dataset.formatted === 'mobile') return;
 
-                    const text = link.textContent.trim();
-                    // Split on whitespace, then split hyphenated words (keeping hyphen with first part)
-                    const words = text.split(/\s+/).flatMap(word =>
-                        word.split(/(?<=-)/)
-                    );
+                        // Store original text if not already stored
+                        if (!link.dataset.originalText) {
+                            link.dataset.originalText = link.textContent.trim();
+                        }
 
-                    // Group words into pairs, each word in its own span
-                    const lines = [];
-                    for (let i = 0; i < words.length; i += 2) {
-                        const word1 = words[i];
-                        const word2 = words[i + 1];
-                        if (word2) {
-                            lines.push(`<span class="title-line"><span class="title-word">${word1}</span><span class="title-word">${word2}</span></span>`);
-                        } else {
-                            lines.push(`<span class="title-line"><span class="title-word">${word1}</span></span>`);
+                        const text = link.dataset.originalText;
+                        // Split on whitespace, then split hyphenated words (keeping hyphen with first part)
+                        const words = text.split(/\s+/).flatMap(word =>
+                            word.split(/(?<=-)/)
+                        );
+
+                        // Group words into pairs, each word in its own span
+                        const lines = [];
+                        for (let i = 0; i < words.length; i += 2) {
+                            const word1 = words[i];
+                            const word2 = words[i + 1];
+                            if (word2) {
+                                lines.push(`<span class="title-line"><span class="title-word">${word1}</span><span class="title-word">${word2}</span></span>`);
+                            } else {
+                                lines.push(`<span class="title-line"><span class="title-word">${word1}</span></span>`);
+                            }
+                        }
+
+                        link.innerHTML = lines.join('');
+                        link.dataset.formatted = 'mobile';
+                    } else {
+                        // Desktop mode - restore original text if it was formatted
+                        if (link.dataset.formatted === 'mobile' && link.dataset.originalText) {
+                            link.textContent = link.dataset.originalText;
+                            link.dataset.formatted = 'desktop';
                         }
                     }
-
-                    link.innerHTML = lines.join('');
-                    link.dataset.formatted = 'true';
                 });
             }
 
