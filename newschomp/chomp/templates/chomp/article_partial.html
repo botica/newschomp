@@ -4,7 +4,7 @@
         {% if category == 'color' %}
             <div class="button-row">
                 <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
-                <button class="local-chomp-btn">gen. local chomp!</button>
+                <button class="local-chomp-btn" title="just for you, baby boy">+loc.!</button>
             </div>
         {% else %}
             <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
@@ -47,5 +47,8 @@
         </div>
     </article>
 {% else %}
-    <div class="empty-state">No news yet</div>
+    <div class="empty-state">
+        <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
+        {% if category == 'world' %}No world news yet{% else %}No local color yet{% endif %}
+    </div>
 {% endif %}
