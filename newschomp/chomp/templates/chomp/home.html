@@ -27,7 +27,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Mobile title formatting - 2 words per line, justified left/right
             function formatMobileTitles() {
-                const isMobile = window.innerWidth <= 480;
+                const isMobile = window.innerWidth <= 600;
 
                 document.querySelectorAll('.article-title a').forEach(link => {
                     if (isMobile) {
@@ -40,10 +40,8 @@
                         }
 
                         const text = link.dataset.originalText;
-                        // Split on whitespace, then split hyphenated words (keeping hyphen with first part)
-                        const words = text.split(/\s+/).flatMap(word =>
-                            word.split(/(?<=-)/)
-                        );
+                        // Split on whitespace only (keep hyphenated words together)
+                        const words = text.split(/\s+/);
 
                         // Group words into pairs, each word in its own span
                         const lines = [];
