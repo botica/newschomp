@@ -153,11 +153,15 @@ body {
 
 /* Summary */
 
-ul {padding: 0;
-width: 100%;}
+ul {
+    padding: 0;
+    width: 100%;
+}
+
+
 .summary {
     list-style: none;
-    padding: 6px 0 0;
+    padding: 0px 0 0;
     background: var(--red);
     margin: 0;
     width: 100%;

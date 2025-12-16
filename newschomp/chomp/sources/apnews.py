@@ -102,24 +102,32 @@ class APNewsSource(NewsSource):
             from ..utils import extract_topics_with_llm
             topics = extract_topics_with_llm(content)
 
-        # Extract image from first picture tag after Page-content div
+        # Extract image from Page-content div
+        # Priority: video player poster > picture tag image
         image_url = None
         page_content_div = soup.find('div', class_='Page-content')
         if page_content_div:
-            picture_tag = page_content_div.find('picture')
-            if picture_tag:
-                img_tag = picture_tag.find('img', class_='Image')
-                if img_tag:
-                    # Try lazy-load attributes first (AP News uses Flickity lazy loading)
-                    image_url = (img_tag.get('data-flickity-lazyload') or
-                                img_tag.get('src'))
+            # First check for video player with poster image (higher priority)
+            video_player = page_content_div.find('bsp-jw-player')
+            if video_player:
+                image_url = video_player.get('poster')
 
-                    # If we got a srcset, extract the first URL
-                    if not image_url or image_url.startswith('data:'):
-                        srcset = img_tag.get('data-flickity-lazyload-srcset')
-                        if srcset:
-                            # Extract first URL from srcset (before "1x" or "2x")
-                            image_url = srcset.split()[0]
+            # Fallback: look for picture tag with Image class
+            if not image_url:
+                picture_tag = page_content_div.find('picture')
+                if picture_tag:
+                    img_tag = picture_tag.find('img', class_='Image')
+                    if img_tag:
+                        # Try lazy-load attributes first (AP News uses Flickity lazy loading)
+                        image_url = (img_tag.get('data-flickity-lazyload') or
+                                    img_tag.get('src'))
+
+                        # If we got a srcset, extract the first URL
+                        if not image_url or image_url.startswith('data:'):
+                            srcset = img_tag.get('data-flickity-lazyload-srcset')
+                            if srcset:
+                                # Extract first URL from srcset (before "1x" or "2x")
+                                image_url = srcset.split()[0]
 
         # Parse publication date
         pub_date = None
