@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .models import Article
-from .utils import generate_summary
+from .utils import generate_summary, LLM_MODEL
 from .sources import get_source, find_nearest_source
 from urllib.parse import urlparse, urlunparse, unquote
 import random
@@ -34,6 +34,7 @@ def home(request):
     return render(request, 'chomp/home.html', {
         'world_article': world_article,
         'color_article': color_article,
+        'llm_model': LLM_MODEL,
     })
 
 
@@ -215,7 +216,8 @@ def refresh_article(request, category):
         context_key = f'{category}_article'
         html_content = render_to_string('chomp/article_partial.html', {
             'article': article_created,
-            'category': category
+            'category': category,
+            'llm_model': LLM_MODEL,
         })
 
         return JsonResponse({
@@ -336,7 +338,8 @@ def fetch_from_source(request, source_name):
         # Render the article HTML
         html_content = render_to_string('chomp/article_partial.html', {
             'article': article_created,
-            'category': 'color'
+            'category': 'color',
+            'llm_model': LLM_MODEL,
         })
 
         return JsonResponse({

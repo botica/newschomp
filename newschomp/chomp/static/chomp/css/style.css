@@ -86,7 +86,7 @@ body {
     position: absolute;
     left: calc(50% + 30px);
     font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -118,6 +118,31 @@ body {
     margin-top: 12px;
     margin-bottom: 12px;
     padding-bottom: 12px;
+}
+
+/* Card Header - category label and refresh button */
+.card-header {
+    position: relative;
+    padding-top: 4px;
+}
+
+.section-category,
+.llm-model {
+    position: absolute;
+    top: 12px;
+    font-size: 14px;
+    color: var(--cream-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 100;
+}
+
+.section-category {
+    left: 16px;
+}
+
+.llm-model {
+    right: 16px;
 }
 
 .article-title {
@@ -305,6 +330,11 @@ ul {
     }
 
     .topic {
+        font-size: 14px;
+    }
+
+    .section-category,
+    .llm-model {
         font-size: 14px;
     }
 }

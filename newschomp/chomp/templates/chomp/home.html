@@ -10,7 +10,7 @@
     <main class="feed">
         <section class="feed-section feed-world">
             <div id="world-content">
-            {% include 'chomp/article_partial.html' with article=world_article category='world' %}
+            {% include 'chomp/article_partial.html' with article=world_article category='world' llm_model=llm_model %}
             </div>
         </section>
 
@@ -18,7 +18,7 @@
 
         <section class="feed-section feed-color">
             <div id="color-content">
-            {% include 'chomp/article_partial.html' with article=color_article category='color' %}
+            {% include 'chomp/article_partial.html' with article=color_article category='color' llm_model=llm_model %}
             </div>
         </section>
     </main>

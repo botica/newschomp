@@ -1,6 +1,8 @@
 import os
 from openai import OpenAI
 
+LLM_MODEL = "gpt-5.2"
+
 
 def generate_summary(content):
     """
@@ -36,7 +38,7 @@ def generate_summary(content):
         client = OpenAI(api_key=api_key)
 
         response = client.responses.create(
-            model="gpt-5.2",
+            model=LLM_MODEL,
             reasoning={"effort": "medium"},
             text={"verbosity": "low"},
             input=[
@@ -122,7 +124,7 @@ def extract_topics_with_llm(content):
         client = OpenAI(api_key=api_key)
 
         response = client.responses.create(
-            model="gpt-5.2",
+            model=LLM_MODEL,
             reasoning={"effort": "medium"},
             text={"verbosity": "low"},
             input=[
