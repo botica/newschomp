@@ -128,7 +128,7 @@ def extract_topics_with_llm(content):
             input=[
                 {
                     "role": "system",
-                    "content": """Extract 3 or 4 topic tags from news articles.
+                    "content": """Extract 3 topic tags from news articles.
 Tags should be reusable across articles: locations (Gaza, Chicago), figures (Trump, Musk), or general categories (Crime, Weather, Tech).
 1 word each, maybe 2. One per line. No bullets."""
                 },
