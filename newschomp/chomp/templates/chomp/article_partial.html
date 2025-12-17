@@ -2,12 +2,12 @@
 {% if article %}
     <article class="article-card">
         <div class="card-header">
-            <span class="section-category">{% if category == 'color' %}LOCAL COLOUR{% else %}{{ category|upper }}{% endif %}</span>
+            <span class="section-category">{% if category == 'color' %}LOCAL{% else %}{{ category|upper }}{% endif %}</span>
             <span class="llm-model">{{ llm_model }}</span>
             {% if category == 'color' %}
                 <div class="button-row">
-                    <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
-                    <button class="local-chomp-btn" title="gen. local chomp!">(X)</button>
+                    <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GEN. LOCAL CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
+                    <button class="local-chomp-btn" title="generate chomp closest to you">(X)</button>
                 </div>
             {% else %}
                 <img src="{% static 'chomp/images/mouth.png' %}" alt="CHOMP WORLD NEWS" title="CHOMP WORLD NEWS" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
