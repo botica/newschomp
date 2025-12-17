@@ -1,6 +1,6 @@
 <div align="center"><img src="newschomp/chomp/static/chomp/images/mouth.png" width="200" style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;" /></div>  
 <br>
-news<strong>CHOMP</strong> is a django app that condenses news articles. llm inference (openai gpt5.2) is used for the summaries - paired with my curation bias it's not a reliable source of current events. its more of disposable news entertainment with the side effect of staying informed. there are minimal sources as i implement them one a time :). a WIP that i plan to deploy soon
+news<strong>CHOMP</strong> is a django app that condenses news articles. llm inference (openai gpt5.2) is used for the summaries - paired with my curation bias it's not a reliable source of current events. its more disposable news entertainment with the side effect of staying informed. there's minimal sources as i implement them one a time :) (WIP).
 <br>
 <br>
 current sources:
