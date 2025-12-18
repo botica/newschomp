@@ -40,8 +40,26 @@
                         }
 
                         const text = link.dataset.originalText;
-                        // Split on whitespace only (keep hyphenated words together)
-                        const words = text.split(/\s+/);
+                        // Split on whitespace first
+                        const spaceWords = text.split(/\s+/);
+
+                        // Further split hyphenated words, keeping hyphen with left part
+                        const words = [];
+                        spaceWords.forEach(word => {
+                            if (word.includes('-')) {
+                                // Split on hyphen but keep it with left part
+                                const parts = word.split('-');
+                                for (let i = 0; i < parts.length; i++) {
+                                    if (i < parts.length - 1) {
+                                        words.push(parts[i] + '-');
+                                    } else {
+                                        words.push(parts[i]);
+                                    }
+                                }
+                            } else {
+                                words.push(word);
+                            }
+                        });
 
                         // Group words into pairs, each word in its own span
                         const lines = [];
