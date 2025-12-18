@@ -105,22 +105,10 @@ COLOR_SOURCES = ['austinchronicle', 'doorcountypulse', 'urbanmilwaukee',
 
 @ensure_csrf_cookie
 def home(request):
-    seen_world = get_seen_urls(request, 'world')
-    seen_color = get_seen_urls(request, 'color')
-
-    # Crawl for articles
-    world_article = fetch_article_from_sources(WORLD_SOURCES.copy(), seen_world)
-    color_article = fetch_article_from_sources(COLOR_SOURCES.copy(), seen_color)
-
-    # Mark as seen
-    if world_article:
-        mark_url_seen(request, world_article.url, 'world')
-    if color_article:
-        mark_url_seen(request, color_article.url, 'color')
-
+    # Return empty - articles will be loaded asynchronously via JS
     return render(request, 'chomp/home.html', {
-        'world_article': world_article,
-        'color_article': color_article,
+        'world_article': None,
+        'color_article': None,
         'llm_model': LLM_MODEL,
     })
 

@@ -96,6 +96,45 @@
                 img.src = img.dataset.frame1; // Reset to original frame
             }
 
+            // Fetch initial articles asynchronously on page load
+            async function loadInitialArticle(category) {
+                const contentDiv = document.getElementById(category + '-content');
+                // Find mouth button - could be in button-row or directly in empty-state
+                const mouthBtn = contentDiv.querySelector('.refresh-btn');
+
+                if (mouthBtn) {
+                    mouthBtn.classList.add('loading');
+                    startChompAnimation(mouthBtn);
+                }
+
+                try {
+                    const response = await fetch(`/refresh/${category}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        contentDiv.innerHTML = data.html;
+                        formatMobileTitles();
+                    }
+                } catch (error) {
+                    console.error(`Error loading initial ${category} article:`, error);
+                } finally {
+                    if (mouthBtn) {
+                        stopChompAnimation(mouthBtn);
+                        mouthBtn.classList.remove('loading');
+                    }
+                }
+            }
+
+            // Load both articles in parallel
+            loadInitialArticle('world');
+            loadInitialArticle('color');
+
             // Use event delegation for dynamically loaded buttons
             document.querySelector('.feed').addEventListener('click', async function(e) {
                 // Handle local chomp button clicks
