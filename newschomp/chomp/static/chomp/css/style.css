@@ -152,7 +152,7 @@ body {
     font-weight: 600;
     line-height: 1;
     margin: 0px 6px;
-    padding-bottom: 4px;
+    padding-bottom: 6px;
     text-transform: lowercase;
     letter-spacing: 0.04em;
 }
@@ -256,7 +256,7 @@ ul {
     display: flex;
     flex-wrap: wrap;
     gap: 0px;
-    margin-top: 8px;
+    margin-top: 12px;
     padding-bottom: 0;
     padding-left: 16px;
 }
