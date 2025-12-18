@@ -33,3 +33,5 @@ screenshots:
 <img src="newschomp/chomp/static/chomp/images/mobile-screen2.png" alt="screen 2" width="500px">
 <br>
 <img src="newschomp/chomp/static/chomp/images/scree3.png" alt="3" width="600px">
+<br>
+<img src="newschomp/chomp/static/chomp/images/screener-sixer.png" alt="screeny weeny" width="600px">
