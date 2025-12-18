@@ -25,43 +25,43 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Mobile title formatting - 2 words per line, justified left/right
-            function formatMobileTitles() {
+            // Title formatting - split hyphenated words, format for desktop/mobile
+            function formatTitles() {
                 const isMobile = window.innerWidth <= 600;
 
                 document.querySelectorAll('.article-title a').forEach(link => {
-                    if (isMobile) {
-                        // Skip if already formatted for mobile
-                        if (link.dataset.formatted === 'mobile') return;
+                    // Store original text if not already stored
+                    if (!link.dataset.originalText) {
+                        link.dataset.originalText = link.textContent.trim();
+                    }
 
-                        // Store original text if not already stored
-                        if (!link.dataset.originalText) {
-                            link.dataset.originalText = link.textContent.trim();
-                        }
+                    // Skip if already formatted for current mode
+                    if (link.dataset.formatted === (isMobile ? 'mobile' : 'desktop')) return;
 
-                        const text = link.dataset.originalText;
-                        // Split on whitespace first
-                        const spaceWords = text.split(/\s+/);
+                    const text = link.dataset.originalText;
+                    // Split on whitespace first
+                    const spaceWords = text.split(/\s+/);
 
-                        // Further split hyphenated words, keeping hyphen with left part
-                        const words = [];
-                        spaceWords.forEach(word => {
-                            if (word.includes('-')) {
-                                // Split on hyphen but keep it with left part
-                                const parts = word.split('-');
-                                for (let i = 0; i < parts.length; i++) {
-                                    if (i < parts.length - 1) {
-                                        words.push(parts[i] + '-');
-                                    } else {
-                                        words.push(parts[i]);
-                                    }
+                    // Further split hyphenated words, keeping hyphen with left part
+                    const words = [];
+                    spaceWords.forEach(word => {
+                        if (word.includes('-')) {
+                            // Split on hyphen but keep it with left part
+                            const parts = word.split('-');
+                            for (let i = 0; i < parts.length; i++) {
+                                if (i < parts.length - 1) {
+                                    words.push(parts[i] + '-');
+                                } else {
+                                    words.push(parts[i]);
                                 }
-                            } else {
-                                words.push(word);
                             }
-                        });
+                        } else {
+                            words.push(word);
+                        }
+                    });
 
-                        // Group words into pairs, each word in its own span
+                    if (isMobile) {
+                        // Mobile: Group words into pairs, each pair on its own line
                         const lines = [];
                         for (let i = 0; i < words.length; i += 2) {
                             const word1 = words[i];
@@ -72,24 +72,21 @@
                                 lines.push(`<span class="title-line"><span class="title-word">${word1}</span></span>`);
                             }
                         }
-
                         link.innerHTML = lines.join('');
                         link.dataset.formatted = 'mobile';
                     } else {
-                        // Desktop mode - restore original text if it was formatted
-                        if (link.dataset.formatted === 'mobile' && link.dataset.originalText) {
-                            link.textContent = link.dataset.originalText;
-                            link.dataset.formatted = 'desktop';
-                        }
+                        // Desktop: All words on one line, spaced evenly
+                        link.innerHTML = words.join(' ');
+                        link.dataset.formatted = 'desktop';
                     }
                 });
             }
 
             // Run on load
-            formatMobileTitles();
+            formatTitles();
 
             // Re-run on resize (in case orientation changes)
-            window.addEventListener('resize', formatMobileTitles);
+            window.addEventListener('resize', formatTitles);
 
             // Animation helper - toggles between two frames
             function startChompAnimation(img) {
@@ -137,7 +134,7 @@
                     const data = await response.json();
                     if (data.success) {
                         contentDiv.innerHTML = data.html;
-                        formatMobileTitles();
+                        formatTitles();
                     }
                 } catch (error) {
                     console.error(`Error loading initial ${category} article:`, error);
@@ -218,8 +215,8 @@
                                 if (fetchData.success) {
                                     // Update the content with the new article
                                     contentDiv.innerHTML = fetchData.html;
-                                    // Re-format titles for mobile
-                                    formatMobileTitles();
+                                    // Re-format titles
+                                    formatTitles();
                                     console.log(`Loaded article from ${fetchData.source_name} (${fetchData.source_city})`);
                                 } else {
                                     alert(fetchData.error || 'Failed to fetch article from nearest source');
@@ -303,8 +300,8 @@
                     if (data.success) {
                         // Update the content with the new article
                         contentDiv.innerHTML = data.html;
-                        // Re-format titles for mobile
-                        formatMobileTitles();
+                        // Re-format titles
+                        formatTitles();
                     } else {
                         alert(data.error || 'Failed to fetch new article');
                     }
