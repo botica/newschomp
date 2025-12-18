@@ -107,6 +107,7 @@ body {
     margin-top: 0;
 }
 
+
 /* Article Card */
 .article-card {
     background: var(--red);
@@ -281,6 +282,9 @@ ul {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-weight: 500;
+    min-height: 500px;
+    margin: 12px 4px;
+    border-radius: 2px;
 }
 
 /* Mobile */
