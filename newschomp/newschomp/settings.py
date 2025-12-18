@@ -25,6 +25,9 @@ SECRET_KEY = 'django-insecure-#3n+anu6497hsqs$e3ra&pxkq6ldo198br&_%22=wkzn*7ucjt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Skip crawling and return mock data (for CSS development)
+SKIP_CRAWL = True
+
 #remove before deply
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ['https://*.loca.lt']

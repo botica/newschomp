@@ -2,8 +2,10 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.conf import settings
 from .utils import generate_summary, LLM_MODEL
 from .sources import get_source, find_nearest_source
+from .mock_data import get_mock_article
 from urllib.parse import urlparse, urlunparse, unquote
 from types import SimpleNamespace
 import random
@@ -119,15 +121,20 @@ def refresh_article(request, category):
         return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
     try:
-        if category == 'world':
-            sources = WORLD_SOURCES.copy()
-        elif category == 'color':
-            sources = COLOR_SOURCES.copy()
-        else:
+        if category not in ('world', 'color'):
             return JsonResponse({'success': False, 'error': 'Invalid category'})
 
-        seen_urls = get_seen_urls(request, category)
-        article = fetch_article_from_sources(sources, seen_urls)
+        # Skip crawling and return mock data for CSS development
+        if getattr(settings, 'SKIP_CRAWL', False):
+            article = get_mock_article(category)
+        else:
+            if category == 'world':
+                sources = WORLD_SOURCES.copy()
+            else:
+                sources = COLOR_SOURCES.copy()
+
+            seen_urls = get_seen_urls(request, category)
+            article = fetch_article_from_sources(sources, seen_urls)
 
         if not article:
             return JsonResponse({'success': False, 'error': 'No new articles found'})
@@ -180,8 +187,12 @@ def fetch_from_source(request, source_name):
         if not source:
             return JsonResponse({'success': False, 'error': f'Source "{source_name}" not available'})
 
-        seen_urls = get_seen_urls(request, 'color')
-        article = fetch_article_from_sources([source_name], seen_urls)
+        # Skip crawling and return mock data for CSS development
+        if getattr(settings, 'SKIP_CRAWL', False):
+            article = get_mock_article('color')
+        else:
+            seen_urls = get_seen_urls(request, 'color')
+            article = fetch_article_from_sources([source_name], seen_urls)
 
         if not article:
             return JsonResponse({'success': False, 'error': f'No new articles from {source.name}'})
