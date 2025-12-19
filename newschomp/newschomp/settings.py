@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-#3n+anu6497hsqs$e3ra&pxkq6ldo198br&_%22=wkzn*7ucjt
 DEBUG = True
 
 # Skip crawling and return mock data (for CSS development)
-SKIP_CRAWL = True
+SKIP_CRAWL = False
 
 #remove before deply
 ALLOWED_HOSTS = ['*']

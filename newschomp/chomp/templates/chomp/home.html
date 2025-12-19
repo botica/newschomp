@@ -21,6 +21,13 @@
             {% include 'chomp/article_partial.html' with article=color_article category='color' llm_model=llm_model %}
             </div>
         </section>
+
+        <section class="feed-section feed-test">
+            <div class="test-url-form">
+                <input type="text" id="test-url-input" placeholder="Enter article URL to test..." />
+                <button id="test-url-btn" type="button">Test</button>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -42,10 +49,12 @@
                     // Split on whitespace first
                     const spaceWords = text.split(/\s+/);
 
-                    // Further split hyphenated words, keeping hyphen with left part
+                    // Only split hyphenated words if it keeps us at 4 words or fewer
+                    // (e.g., 3 words with 1 hyphenated -> 4 words = OK)
+                    // (e.g., 4 words with 1 hyphenated -> 5 words = don't split)
                     const words = [];
                     spaceWords.forEach(word => {
-                        if (word.includes('-')) {
+                        if (word.includes('-') && spaceWords.length < 4) {
                             // Split on hyphen but keep it with left part
                             const parts = word.split('-');
                             for (let i = 0; i < parts.length; i++) {
@@ -312,6 +321,58 @@
                     // Stop animation and remove loading state
                     stopChompAnimation(button);
                     button.classList.remove('loading');
+                }
+            });
+
+            // Test URL form handler
+            document.getElementById('test-url-btn').addEventListener('click', async function() {
+                const input = document.getElementById('test-url-input');
+                const url = input.value.trim();
+                const btn = this;
+
+                if (!url) {
+                    alert('Please enter a URL');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = 'Loading...';
+
+                try {
+                    const response = await fetch('/test-url/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ url: url })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        // Load into the appropriate section based on category
+                        const contentDiv = document.getElementById(data.category + '-content');
+                        contentDiv.innerHTML = data.html;
+                        formatTitles();
+                        // Scroll to the section so user can see it
+                        contentDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        console.log(`Loaded article from ${data.source_name} into ${data.category}`);
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to fetch: ' + error.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Test';
+                }
+            });
+
+            // Allow Enter key to submit
+            document.getElementById('test-url-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('test-url-btn').click();
                 }
             });
 

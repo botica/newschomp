@@ -357,3 +357,39 @@ ul {
     }
 }
 
+/* Test URL Form */
+.test-url-form {
+    display: flex;
+    gap: 10px;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.test-url-form input {
+    flex: 1;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.test-url-form button {
+    padding: 10px 20px;
+    font-size: 14px;
+    background: var(--red);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.test-url-form button:hover {
+    opacity: 0.9;
+}
+
+.test-url-form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+

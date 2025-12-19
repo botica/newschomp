@@ -174,21 +174,66 @@ class BBCSource(NewsSource):
         print(f"DEBUG: Final content length: {len(content) if content else 0}")
 
         # Extract image URL
-        # Main photos are inside <figure> tags
-        # Major images use class 'sc-5340b511-0 hLdNfA'
+        # Priority: VideoObject thumbnail (for video articles) > figure images > direct images
+        import json
         image_url = None
-        figure = soup.find('figure')
-        if figure:
-            img_tag = figure.find('img', class_='sc-5340b511-0 hLdNfA')
+
+        # First, check for VideoObject JSON-LD schema (video articles should use video thumbnail)
+        scripts = soup.find_all('script', type='application/ld+json')
+        for script in scripts:
+            try:
+                data = json.loads(script.string)
+                if data.get('@type') == 'VideoObject' and data.get('thumbnailUrl'):
+                    thumb_url = data['thumbnailUrl']
+                    # Replace $recipe placeholder with large dimensions (BBC CDN resizes)
+                    if '$recipe' in thumb_url:
+                        thumb_url = thumb_url.replace('$recipe', '1920x1080')
+                    image_url = thumb_url
+                    print(f"DEBUG: Found VideoObject thumbnailUrl: {image_url}")
+                    break
+            except (json.JSONDecodeError, TypeError):
+                continue
+
+        # Try holding_image with srcset (video player poster)
+        if not image_url:
+            img_tag = soup.find('img', class_='holding_image')
             if img_tag:
-                image_url = img_tag.get('src')
-                print(f"DEBUG: Found image URL in figure: {image_url}")
-            else:
-                # Fallback: try any img tag in the figure
-                img_tag = figure.find('img')
+                srcset = img_tag.get('srcset', '')
+                if srcset and 'ichef.bbci.co.uk' in srcset:
+                    parts = srcset.split(',')
+                    for part in reversed(parts):
+                        url = part.strip().split()[0]
+                        if 'ichef.bbci.co.uk' in url:
+                            image_url = url
+                            print(f"DEBUG: Found holding_image srcset URL: {image_url}")
+                            break
+                if not image_url:
+                    image_url = img_tag.get('src')
+                    if image_url:
+                        print(f"DEBUG: Found holding_image URL: {image_url}")
+
+        # Try figure tag images
+        if not image_url:
+            figure = soup.find('figure')
+            if figure:
+                img_tag = figure.find('img', class_='sc-5340b511-0 hLdNfA')
                 if img_tag:
                     image_url = img_tag.get('src')
-                    print(f"DEBUG: Found fallback image URL in figure: {image_url}")
+                    print(f"DEBUG: Found image URL in figure: {image_url}")
+                else:
+                    img_tag = figure.find('img')
+                    if img_tag:
+                        image_url = img_tag.get('src')
+                        print(f"DEBUG: Found fallback image URL in figure: {image_url}")
+
+        # Try direct images on page
+        if not image_url:
+            img_tag = soup.find('img', class_='sc-5340b511-0 hLdNfA')
+            if img_tag:
+                src = img_tag.get('src', '')
+                if 'ichef.bbci.co.uk' in src:
+                    image_url = src
+                    print(f"DEBUG: Found image URL directly: {image_url}")
 
         if not image_url:
             print("DEBUG: No image URL found")

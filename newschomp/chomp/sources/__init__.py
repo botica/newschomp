@@ -77,6 +77,60 @@ def get_local_sources_with_locations():
     return sources
 
 
+def get_source_for_url(url):
+    """
+    Detect the appropriate source for a given URL based on domain.
+
+    Args:
+        url: Article URL
+
+    Returns:
+        NewsSource instance or None if no matching source found
+    """
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    domain = parsed.netloc.lower()
+
+    # Map domains to source keys
+    domain_map = {
+        'bbc.com': 'bbc',
+        'www.bbc.com': 'bbc',
+        'bbc.co.uk': 'bbc',
+        'www.bbc.co.uk': 'bbc',
+        'apnews.com': 'apnews',
+        'www.apnews.com': 'apnews',
+        'reuters.com': 'reuters',
+        'www.reuters.com': 'reuters',
+        'austinchronicle.com': 'austinchronicle',
+        'www.austinchronicle.com': 'austinchronicle',
+        'doorcountypulse.com': 'doorcountypulse',
+        'www.doorcountypulse.com': 'doorcountypulse',
+        'urbanmilwaukee.com': 'urbanmilwaukee',
+        'www.urbanmilwaukee.com': 'urbanmilwaukee',
+        'stlmag.com': 'stlmag',
+        'www.stlmag.com': 'stlmag',
+        'blockclubchicago.org': 'blockclubchicago',
+        'www.blockclubchicago.org': 'blockclubchicago',
+        'gothamist.com': 'gothamist',
+        'www.gothamist.com': 'gothamist',
+        '303magazine.com': '303magazine',
+        'www.303magazine.com': '303magazine',
+        'iexaminer.org': 'iexaminer',
+        'www.iexaminer.org': 'iexaminer',
+        'thegambit.com': 'gambit',
+        'www.thegambit.com': 'gambit',
+        'slugmag.com': 'slugmag',
+        'www.slugmag.com': 'slugmag',
+        'folioweekly.com': 'folioweekly',
+        'www.folioweekly.com': 'folioweekly',
+    }
+
+    source_key = domain_map.get(domain)
+    if source_key:
+        return get_source(source_key)
+    return None
+
+
 def find_nearest_source(user_lat, user_lng):
     """
     Find the nearest local news source to the user's location.

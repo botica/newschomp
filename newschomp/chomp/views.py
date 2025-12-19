@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.conf import settings
 from .utils import generate_summary, LLM_MODEL
-from .sources import get_source, find_nearest_source
+from .sources import get_source, find_nearest_source, get_source_for_url
 from .mock_data import get_mock_article
 from urllib.parse import urlparse, urlunparse, unquote
 from types import SimpleNamespace
@@ -210,6 +210,79 @@ def fetch_from_source(request, source_name):
             'html': html_content,
             'source_name': source.name,
             'source_city': source.city
+        })
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+def test_url(request):
+    """Fetch and display a specific article URL for testing."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+    try:
+        import json
+        data = json.loads(request.body)
+        url = data.get('url', '').strip()
+
+        if not url:
+            return JsonResponse({'success': False, 'error': 'URL is required'})
+
+        # Detect source from URL
+        source = get_source_for_url(url)
+        if not source:
+            return JsonResponse({'success': False, 'error': f'No source found for URL: {url}'})
+
+        # Fetch and extract
+        print(f"Test URL: Fetching {url} using {source.name}")
+        html = source.fetch(url)
+        article_data = source.extract(html)
+
+        if not article_data or not article_data.get('title'):
+            return JsonResponse({'success': False, 'error': 'Failed to extract article data'})
+
+        # Generate summary
+        summary = ''
+        ai_title = ''
+        if article_data.get('content'):
+            ai_data = generate_summary(article_data['content'])
+            if ai_data:
+                summary = ai_data.get('summary', '')
+                ai_title = ai_data.get('ai_title', '')
+
+        # Build article object
+        article = SimpleNamespace(
+            url=article_data.get('url') or url,
+            title=article_data['title'],
+            pub_date=article_data.get('pub_date'),
+            content=article_data.get('content', ''),
+            summary=summary,
+            ai_title=ai_title,
+            image_url=article_data.get('image_url', ''),
+            topics=article_data.get('topics', []),
+            source=source.source_key
+        )
+
+        # Determine category based on source
+        if source.source_key in WORLD_SOURCES:
+            category = 'world'
+        else:
+            category = 'color'
+
+        html_content = render_to_string('chomp/article_partial.html', {
+            'article': article,
+            'category': category,
+            'llm_model': LLM_MODEL,
+        })
+
+        return JsonResponse({
+            'success': True,
+            'html': html_content,
+            'source_name': source.name,
+            'category': category
         })
 
     except Exception as e:
