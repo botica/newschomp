@@ -91,8 +91,6 @@ TITLE: <exactly 4 words>
 
     except Exception as e:
         print(f"Failed to generate summary: {type(e).__name__}: {e}")
-        import traceback
-        traceback.print_exc()
         return None
 
 
@@ -152,7 +150,5 @@ Tags should be reusable across articles: locations (Gaza, Chicago), figures (Tru
 
     except Exception as e:
         print(f"Failed to extract topics: {type(e).__name__}: {e}")
-        import traceback
-        traceback.print_exc()
         return []
 
