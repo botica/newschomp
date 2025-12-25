@@ -52,7 +52,17 @@
     </article>
 {% else %}
     <div class="empty-state">
-        <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
-        {% if category == 'world' %}No world news yet{% else %}No local color yet{% endif %}
+        <div class="card-header">
+            <span class="section-category">{% if category == 'color' %}LOCAL{% else %}{{ category|upper }}{% endif %}</span>
+            <span class="llm-model">{{ llm_model }}</span>
+        </div>
+        <div class="empty-state-inner">
+            <div class="empty-state-mouth">
+                <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="GENERATE NEW CHOMP" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
+            </div>
+            <div class="empty-state-footer">
+                <p class="empty-state-text">{% if category == 'world' %}chomping world news{% else %}generating local news chomps :){% endif %}</p>
+            </div>
+        </div>
     </div>
 {% endif %}

@@ -155,9 +155,12 @@
                 }
             }
 
-            // Load both articles in parallel
-            loadInitialArticle('world');
-            loadInitialArticle('color');
+            // Load both articles in parallel (skip if ?empty=1 in URL for design testing)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.has('empty')) {
+                loadInitialArticle('world');
+                loadInitialArticle('color');
+            }
 
             // Use event delegation for dynamically loaded buttons
             document.querySelector('.feed').addEventListener('click', async function(e) {

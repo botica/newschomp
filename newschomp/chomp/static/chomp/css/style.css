@@ -275,7 +275,8 @@ ul {
 
 /* Empty State */
 .empty-state {
-    padding: 8px 16px 40px;
+    display: flex;
+    flex-direction: column;
     text-align: center;
     color: var(--cream-light);
     font-size: 14px;
@@ -283,9 +284,45 @@ ul {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-weight: 500;
-    min-height: 500px;
+    min-height: 600px;
     margin: 12px 4px;
     border-radius: 2px;
+}
+
+.empty-state-inner {
+    background: var(--cream);
+    margin: 40px 20px;
+    flex: 1;
+    position: relative;
+}
+
+.empty-state-mouth {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.empty-state .refresh-btn {
+    width: 200px;
+}
+
+.empty-state-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.empty-state-text {
+    font-size: 42px;
+    color: var(--red);
+    font-weight: 600;
+    line-height: 1.1;
+    margin: 0;
+    background-color: var(--cream-light);
+    display: inline;
 }
 
 /* Mobile */
