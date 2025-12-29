@@ -176,8 +176,12 @@ class ReutersSource(NewsSource):
             url = url_tag.get('href') if url_tag else None
 
         # Try to extract publication date
+        # Reuters uses name= instead of property= for article:published_time
+        # and og:article:published_time instead of og:published_time
         pub_date = None
-        pub_date_tag = soup.find('meta', property='article:published_time') or \
+        pub_date_tag = soup.find('meta', attrs={'name': 'article:published_time'}) or \
+                       soup.find('meta', property='og:article:published_time') or \
+                       soup.find('meta', property='article:published_time') or \
                        soup.find('meta', property='og:published_time')
 
         if pub_date_tag:

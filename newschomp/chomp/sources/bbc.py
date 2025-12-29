@@ -144,7 +144,9 @@ class BBCSource(NewsSource):
             og_url_tag = soup.find('meta', property='og:url')
             url = og_url_tag.get('content') if og_url_tag else None
 
-        pub_date_tag = soup.find('meta', property='article:published_time')
+        # BBC uses cXenseParse:publishtime instead of article:published_time
+        pub_date_tag = soup.find('meta', attrs={'name': 'cXenseParse:publishtime'}) or \
+                       soup.find('meta', property='article:published_time')
 
         print(f"DEBUG: title_tag = {title_tag}")
         print(f"DEBUG: url from canonical = {url}")
