@@ -102,6 +102,17 @@ body {
     cursor: not-allowed;
 }
 
+/* Click hint - mirrors local-chomp-btn on left side */
+.click-hint {
+    position: absolute;
+    right: calc(50% + 30px);
+    font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
+    font-size: 11px;
+    font-weight: 100;
+    letter-spacing: 0.05em;
+    color: var(--cream-light);
+}
+
 #world-content,
 #color-content {
     margin-top: 0;
