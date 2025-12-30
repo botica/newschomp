@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotAllowed
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.conf import settings
@@ -118,7 +118,7 @@ def home(request):
 def refresh_article(request, category):
     """Fetch a new article for the specified category."""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+        return HttpResponseNotAllowed(['POST'])
 
     try:
         if category not in ('world', 'color'):
@@ -158,7 +158,7 @@ def refresh_article(request, category):
 def get_nearest_source(request):
     """Find the nearest local news source based on user's location."""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+        return HttpResponseNotAllowed(['POST'])
 
     try:
         import json
@@ -180,7 +180,7 @@ def get_nearest_source(request):
 def fetch_from_source(request, source_name):
     """Fetch a new article from a specific source."""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+        return HttpResponseNotAllowed(['POST'])
 
     try:
         source = get_source(source_name)
@@ -221,7 +221,7 @@ def fetch_from_source(request, source_name):
 def test_url(request):
     """Fetch and display a specific article URL for testing."""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+        return HttpResponseNotAllowed(['POST'])
 
     try:
         import json

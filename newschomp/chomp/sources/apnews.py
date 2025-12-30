@@ -34,8 +34,12 @@ class APNewsSource(NewsSource):
         print(f"Fetching AP News World News: {world_news_url}")
 
         # Fetch world news page
-        response = requests.get(world_news_url)
-        response.raise_for_status()
+        try:
+            response = requests.get(world_news_url)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            print(f"HTTP error fetching AP News: {e}")
+            return []
 
         # Parse page
         soup = BeautifulSoup(response.text, 'html.parser')

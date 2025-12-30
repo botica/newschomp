@@ -22,12 +22,14 @@
             </div>
         </section>
 
+        {% if debug %}
         <section class="feed-section feed-test">
             <div class="test-url-form">
                 <input type="text" id="test-url-input" placeholder="Enter article URL to test..." />
                 <button id="test-url-btn" type="button">Test</button>
             </div>
         </section>
+        {% endif %}
     </main>
 
     <script>
@@ -327,6 +329,7 @@
                 }
             });
 
+            {% if debug %}
             // Test URL form handler
             document.getElementById('test-url-btn').addEventListener('click', async function() {
                 const input = document.getElementById('test-url-input');
@@ -378,6 +381,7 @@
                     document.getElementById('test-url-btn').click();
                 }
             });
+            {% endif %}
 
             // Helper function to get CSRF token
             function getCookie(name) {
