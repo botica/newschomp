@@ -5,7 +5,7 @@
             <span class="section-category">{% if category == 'color' %}LOCAL{% else %}{{ category|upper }}{% endif %}</span>
             <span class="llm-model">{{ llm_model }}</span>
             <div class="button-row">
-                <span class="click-hint">click the mouth! --></span>
+                <span class="click-hint">click!>></span>
                 <img src="{% static 'chomp/images/mouth.png' %}" alt="Refresh" title="{% if category == 'color' %}GEN. LOCAL CHOMP{% else %}CHOMP WORLD NEWS{% endif %}" class="refresh-btn" data-category="{{ category }}" data-frame1="{% static 'chomp/images/mouth.png' %}" data-frame2="{% static 'chomp/images/mouth-2.png' %}">
                 {% if category == 'color' %}
                     <button class="local-chomp-btn" title="generate chomp closest to you">(X)</button>
