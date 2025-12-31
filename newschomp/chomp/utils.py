@@ -51,10 +51,10 @@ Include details.
 KEEP LINES TINY.
 Express the main idea.
 Cut filler. Be objective. Make it MINIMAL.
+Present the news as an original source. Do not reference the article or publisher explicitly.
 Finally, provide a unique title that is EXACTLY 4 words (4 space-separated tokens).
 "New Year's Eve" is 3 words. "St. Louis" is 2 words. "Record-Breaking" is 1 word.
 Combine or abbreviate to hit exactly 4.
-Present the news as an original source. Do not reference 'the article' explicitly.
 
 Output format:
 TITLE: <exactly 4 space-separated words>
